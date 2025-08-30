@@ -1,0 +1,305 @@
+# Copyright (C) 2025 Fullworks
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Fullworks Active Users Monitor 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/fullworks-active-users-monitor\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-08-30T20:58:28+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: fullworks-active-users-monitor\n"
+
+#. Plugin Name of the plugin
+#: fullworks-active-users-monitor.php
+msgid "Fullworks Active Users Monitor"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: fullworks-active-users-monitor.php
+msgid "https://fullworks.net/products/active-users-monitor/"
+msgstr ""
+
+#. Description of the plugin
+#: fullworks-active-users-monitor.php
+msgid "Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities."
+msgstr ""
+
+#. Author of the plugin
+#: fullworks-active-users-monitor.php
+msgid "Fullworks"
+msgstr ""
+
+#. Author URI of the plugin
+#: fullworks-active-users-monitor.php
+msgid "https://fullworks.net/"
+msgstr ""
+
+#: fullworks-active-users-monitor.php:183
+msgid "An error occurred while updating online users."
+msgstr ""
+
+#: fullworks-active-users-monitor.php:215
+#: includes/class-admin-bar.php:162
+#: includes/class-dashboard-widget.php:166
+msgid "Settings"
+msgstr ""
+
+#: includes/class-admin-bar.php:64
+msgid "Users Online"
+msgstr ""
+
+#: includes/class-admin-bar.php:76
+msgid "View online users"
+msgstr ""
+
+#: includes/class-admin-bar.php:87
+msgid "Online by Role:"
+msgstr ""
+
+#: includes/class-admin-bar.php:151
+msgid "View All Users"
+msgstr ""
+
+#: includes/class-admin-bar.php:175
+#: includes/class-ajax-handler.php:48
+#: includes/class-ajax-handler.php:110
+#: includes/class-ajax-handler.php:198
+msgid "Invalid security token"
+msgstr ""
+
+#: includes/class-admin-bar.php:180
+#: includes/class-ajax-handler.php:53
+#: includes/class-ajax-handler.php:115
+#: includes/class-ajax-handler.php:203
+msgid "Insufficient permissions"
+msgstr ""
+
+#: includes/class-ajax-handler.php:209
+msgid "Invalid user ID"
+msgstr ""
+
+#: includes/class-ajax-handler.php:219
+msgid "User not found"
+msgstr ""
+
+#: includes/class-dashboard-widget.php:56
+#: includes/class-settings.php:35
+msgid "Active Users Monitor"
+msgstr ""
+
+#. translators: %d: Number of users
+#: includes/class-dashboard-widget.php:78
+msgid "User Online"
+msgid_plural "Users Online"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-dashboard-widget.php:86
+msgid "By Role"
+msgstr ""
+
+#: includes/class-dashboard-widget.php:123
+msgid "Recently Active"
+msgstr ""
+
+#: includes/class-dashboard-widget.php:151
+#: includes/class-user-tracker.php:204
+msgid "Online now"
+msgstr ""
+
+#: includes/class-dashboard-widget.php:161
+msgid "View All Online Users"
+msgstr ""
+
+#: includes/class-dashboard-widget.php:172
+#: includes/class-users-list.php:306
+msgid "Last updated:"
+msgstr ""
+
+#: includes/class-settings.php:34
+msgid "Active Users Monitor Settings"
+msgstr ""
+
+#: includes/class-settings.php:58
+msgid "General Settings"
+msgstr ""
+
+#: includes/class-settings.php:66
+msgid "Enable Admin Bar Counter"
+msgstr ""
+
+#: includes/class-settings.php:72
+msgid "Show online users counter in admin bar"
+msgstr ""
+
+#: includes/class-settings.php:79
+msgid "Refresh Interval"
+msgstr ""
+
+#: includes/class-settings.php:85
+msgid "seconds (15-300)"
+msgstr ""
+
+#: includes/class-settings.php:95
+msgid "Enable Dashboard Widget"
+msgstr ""
+
+#: includes/class-settings.php:101
+msgid "Show online users widget on dashboard"
+msgstr ""
+
+#: includes/class-settings.php:108
+msgid "Display Settings"
+msgstr ""
+
+#: includes/class-settings.php:116
+msgid "Show Last Seen"
+msgstr ""
+
+#: includes/class-settings.php:122
+msgid "Display last seen time for offline users"
+msgstr ""
+
+#: includes/class-settings.php:129
+msgid "Enable Animations"
+msgstr ""
+
+#: includes/class-settings.php:135
+msgid "Enable pulse animations for online indicators"
+msgstr ""
+
+#: includes/class-settings.php:142
+msgid "Permission Settings"
+msgstr ""
+
+#: includes/class-settings.php:150
+msgid "Who Can See Online Status"
+msgstr ""
+
+#: includes/class-settings.php:217
+msgid "Settings saved successfully."
+msgstr ""
+
+#: includes/class-settings.php:237
+msgid "About Active Users Monitor"
+msgstr ""
+
+#: includes/class-settings.php:238
+msgid "This plugin provides real-time visibility of logged-in users using WordPress's native session tokens system."
+msgstr ""
+
+#: includes/class-settings.php:239
+msgid "Features include:"
+msgstr ""
+
+#: includes/class-settings.php:241
+msgid "• Real-time online user tracking"
+msgstr ""
+
+#: includes/class-settings.php:242
+msgid "• Admin bar counter with role breakdown"
+msgstr ""
+
+#: includes/class-settings.php:243
+msgid "• Visual indicators in users list"
+msgstr ""
+
+#: includes/class-settings.php:244
+msgid "• Filtering by online/offline status"
+msgstr ""
+
+#: includes/class-settings.php:245
+msgid "• Dashboard widget"
+msgstr ""
+
+#: includes/class-settings.php:246
+msgid "• WP-CLI support"
+msgstr ""
+
+#: includes/class-settings.php:257
+msgid "Configure general plugin settings."
+msgstr ""
+
+#: includes/class-settings.php:264
+msgid "Configure how online users are displayed."
+msgstr ""
+
+#: includes/class-settings.php:271
+msgid "Configure who can see online user status."
+msgstr ""
+
+#: includes/class-settings.php:340
+msgid "Select which roles can see online user status. Administrator role is always included."
+msgstr ""
+
+#: includes/class-user-tracker.php:200
+msgid "Never"
+msgstr ""
+
+#: includes/class-user-tracker.php:210
+msgid "Just now"
+msgstr ""
+
+#. translators: %d: Number of minutes
+#: includes/class-user-tracker.php:214
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of hours
+#: includes/class-user-tracker.php:218
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of days
+#: includes/class-user-tracker.php:222
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-users-list.php:81
+msgid "Online Status"
+msgstr ""
+
+#: includes/class-users-list.php:107
+#: includes/class-users-list.php:196
+msgid "Online"
+msgstr ""
+
+#: includes/class-users-list.php:107
+#: includes/class-users-list.php:208
+msgid "Offline"
+msgstr ""
+
+#: includes/class-users-list.php:148
+msgid "ONLINE"
+msgstr ""
+
+#. translators: 1: Count, 2: Role name
+#: includes/class-users-list.php:286
+msgid "%1$d %2$s"
+msgid_plural "%1$d %2$s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-users-list.php:290
+msgid "No users online"
+msgstr ""
+
+#: includes/class-users-list.php:295
+msgid "Online Users:"
+msgstr ""
+
+#. translators: %d: Total online users
+#: includes/class-users-list.php:299
+msgid "%d users online"
+msgstr ""
