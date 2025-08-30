@@ -1,4 +1,4 @@
-# Plugin Name
+# Fullworks Active Users Monitor
 
 Brief description of what your plugin does.
 
@@ -18,7 +18,7 @@ Longer description explaining the plugin's purpose, main features, and benefits 
 ### From WordPress Admin
 
 1. Navigate to Plugins > Add New
-2. Search for "Plugin Name"
+2. Search for "Fullworks Active Users Monitor"
 3. Click "Install Now" and then "Activate"
 
 ### Manual Installation
@@ -31,7 +31,7 @@ Longer description explaining the plugin's purpose, main features, and benefits 
 ### Via Composer
 
 ```bash
-composer require yourname/plugin-name
+composer require yourname/fullworks-active-users-monitor
 ```
 
 ## Usage
@@ -51,7 +51,7 @@ Explain how to use the plugin after activation.
 
 Describe any settings or configuration options.
 
-1. Navigate to Settings > Plugin Name
+1. Navigate to Settings > Fullworks Active Users Monitor
 2. Configure your options
 3. Save changes
 
@@ -60,7 +60,7 @@ Describe any settings or configuration options.
 If your plugin provides shortcodes:
 
 ```
-[plugin_name attribute="value"]
+[fullworks_active_users_monitor attribute="value"]
 ```
 
 ### Hooks and Filters
@@ -69,14 +69,14 @@ If your plugin provides shortcodes:
 
 ```php
 // Example action
-do_action( 'plugin_name_init' );
+do_action( 'fullworks_active_users_monitor_init' );
 ```
 
 #### Filters
 
 ```php
 // Example filter
-$value = apply_filters( 'plugin_name_filter', $value );
+$value = apply_filters( 'fullworks_active_users_monitor_filter', $value );
 ```
 
 ## Requirements
@@ -116,8 +116,8 @@ Initial release of the plugin.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourname/plugin-name.git
-cd plugin-name
+git clone https://github.com/yourname/fullworks-active-users-monitor.git
+cd fullworks-active-users-monitor
 
 # Install dependencies
 composer install
@@ -157,7 +157,7 @@ Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTIN
 
 - [Documentation](https://example.com/docs)
 - [Support Forum](https://example.com/support)
-- [Issue Tracker](https://github.com/yourname/plugin-name/issues)
+- [Issue Tracker](https://github.com/yourname/fullworks-active-users-monitor/issues)
 
 ## License
 
@@ -166,7 +166,7 @@ This plugin is licensed under the [GPL v2 or later](https://www.gnu.org/licenses
 ## Credits
 
 - [Your Name](https://example.com)
-- [Contributors](https://github.com/yourname/plugin-name/contributors)
+- [Contributors](https://github.com/yourname/fullworks-active-users-monitor/contributors)
 
 ## Donate
 

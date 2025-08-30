@@ -1,21 +1,23 @@
 {
-    "name": "plugin-name",
+    "name": "fullworks-active-users-monitor",
     "version": "1.0.0",
-    "description": "WordPress plugin boilerplate",
-    "author": "Your Name",
+    "description": "Real-time monitoring of logged-in WordPress users with visual indicators and admin tools",
+    "author": "Fullworks",
     "license": "GPL-2.0-or-later",
     "keywords": [
         "wordpress",
         "plugin",
-        "boilerplate"
+        "users",
+        "monitoring",
+        "admin"
     ],
-    "homepage": "https://github.com/yourname/plugin-name",
+    "homepage": "https://github.com/alanef/fullworks-active-users-monitor",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourname/plugin-name.git"
+        "url": "https://github.com/alanef/fullworks-active-users-monitor.git"
     },
     "bugs": {
-        "url": "https://github.com/yourname/plugin-name/issues"
+        "url": "https://github.com/alanef/fullworks-active-users-monitor/issues"
     },
     "scripts": {
         "env:start": "wp-env start --xdebug",
@@ -26,9 +28,9 @@
         "env:logs": "wp-env logs",
         "lint:php": "composer run-script lint",
         "lint:php:fix": "composer run-script lint:fix",
-        "test": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/plugin-name && phpunit'",
-        "test:unit": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/plugin-name && phpunit --testsuite unit'",
-        "test:integration": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/plugin-name && phpunit --testsuite integration'",
+        "test": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit'",
+        "test:unit": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit --testsuite unit'",
+        "test:integration": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit --testsuite integration'",
         "build": "./bin/build-release.sh",
         "setup": "./bin/setup-plugin.sh",
         "composer:install": "composer install",

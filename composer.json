@@ -1,13 +1,13 @@
 {
-    "name": "yourname/plugin-name",
-    "description": "WordPress plugin boilerplate",
+    "name": "fullworks/active-users-monitor",
+    "description": "Real-time monitoring of logged-in WordPress users with visual indicators and admin tools",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "authors": [
         {
-            "name": "Your Name",
-            "email": "email@example.com",
-            "homepage": "https://example.com"
+            "name": "Fullworks",
+            "email": "support@fullworks.net",
+            "homepage": "https://fullworks.net"
         }
     ],
     "minimum-stability": "stable",
@@ -34,11 +34,11 @@
         "preferred-install": "dist"
     },
     "scripts": {
-        "lint": "phpcs",
-        "lint:fix": "phpcbf",
-        "test": "phpunit",
-        "test:unit": "phpunit --testsuite unit",
-        "test:integration": "phpunit --testsuite integration"
+        "lint": "./vendor/bin/phpcs",
+        "lint:fix": "./vendor/bin/phpcbf",
+        "test": "./vendor/bin/phpunit",
+        "test:unit": "./vendor/bin/phpunit --testsuite unit",
+        "test:integration": "./vendor/bin/phpunit --testsuite integration"
     },
     "scripts-descriptions": {
         "lint": "Run PHP_CodeSniffer to detect coding standard violations",

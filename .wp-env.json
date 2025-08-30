@@ -1,6 +1,6 @@
 {
     "plugins": [
-        "./plugin-name"
+        "./fullworks-active-users-monitor"
     ],
     "config": {
         "WP_DEBUG": true,
@@ -12,7 +12,7 @@
     "env": {
         "tests": {
             "plugins": [
-                "./plugin-name"
+                "./fullworks-active-users-monitor"
             ],
             "port": 8889,
             "config": {

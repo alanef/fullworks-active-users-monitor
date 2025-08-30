@@ -9,7 +9,7 @@ This document provides comprehensive instructions for AI agents to create WordPr
 ```php
 <?php
 /**
- * Plugin Name:       My Plugin Name
+ * Fullworks Active Users Monitor:       My Fullworks Active Users Monitor
  * Plugin URI:        https://example.com/plugins/my-plugin/
  * Description:       Brief description of what the plugin does.
  * Version:           1.0.0
@@ -327,7 +327,7 @@ $wpdb->insert(
 - Any trademarked names
 
 **Acceptable:**
-- "WP Plugin Name" instead of "WordPress Plugin Name"
+- "WP Fullworks Active Users Monitor" instead of "WordPress Fullworks Active Users Monitor"
 - "Integration for WooCommerce" instead of "WooCommerce Extension"
 
 ### 10. File Organization
@@ -515,7 +515,7 @@ Before submission, ensure:
 ```php
 <?php
 /**
- * Plugin Name:       My Awesome Plugin
+ * Fullworks Active Users Monitor:       My Awesome Plugin
  * Plugin URI:        https://example.com/plugins/my-awesome-plugin/
  * Description:       Does awesome things the WordPress way.
  * Version:           1.0.0

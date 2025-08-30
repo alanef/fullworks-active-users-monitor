@@ -20,7 +20,7 @@ A modern, comprehensive WordPress plugin boilerplate with built-in support for m
 2. Clone your new repository
 3. Run the setup script:
    ```bash
-   ./bin/setup-plugin.sh "Your Plugin Name" "your-plugin-slug"
+   ./bin/setup-plugin.sh "Your Fullworks Active Users Monitor" "your-plugin-slug"
    ```
 4. Install dependencies:
    ```bash
@@ -62,8 +62,8 @@ wordpress-plugin-boilerplate/
 │   │   ├── build-release.yml     # Automated release builds
 │   │   └── *.yml.example          # Optional deployment workflows
 │   └── ISSUE_TEMPLATE/            # Issue templates
-├── plugin-name/                   # Main plugin directory
-│   ├── plugin-name.php            # Main plugin file
+├── fullworks-active-users-monitor/                   # Main plugin directory
+│   ├── fullworks-active-users-monitor.php            # Main plugin file
 │   ├── readme.txt                 # WordPress.org readme
 │   ├── uninstall.php              # Cleanup on uninstall
 │   └── .distignore                # Build exclusions

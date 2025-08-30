@@ -1,0 +1,129 @@
+/**
+ * Admin Bar styles for Active Users Monitor
+ */
+
+/* Admin bar item */
+#wpadminbar .fwaum-admin-bar-item > a {
+	display: flex !important;
+	align-items: center;
+	gap: 5px;
+}
+
+.fwaum-admin-bar-icon {
+	font-size: 16px;
+	line-height: 1;
+}
+
+.fwaum-admin-bar-text {
+	font-size: 13px;
+}
+
+.fwaum-online-count {
+	font-weight: 600;
+	color: #72aee6;
+	animation: fwaum-count-update 0.3s ease-in-out;
+}
+
+/* Dropdown menu */
+#wpadminbar .fwaum-role-header a {
+	font-weight: 600 !important;
+	pointer-events: none;
+	color: #ccc !important;
+}
+
+#wpadminbar .fwaum-role-item a {
+	padding-left: 30px !important;
+}
+
+.fwaum-role-count {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+}
+
+/* Role-specific colors in dropdown */
+#wpadminbar .fwaum-role-administrator a {
+	border-left: 3px solid #ff9800;
+}
+
+#wpadminbar .fwaum-role-editor a {
+	border-left: 3px solid #2196f3;
+}
+
+#wpadminbar .fwaum-role-author a {
+	border-left: 3px solid #4caf50;
+}
+
+#wpadminbar .fwaum-role-contributor a {
+	border-left: 3px solid #9c27b0;
+}
+
+#wpadminbar .fwaum-role-subscriber a {
+	border-left: 3px solid #646970;
+}
+
+/* Separator */
+#wpadminbar .fwaum-separator-item {
+	height: 0 !important;
+	min-height: 0 !important;
+}
+
+#wpadminbar .fwaum-separator {
+	border: 0;
+	border-top: 1px solid #464b50;
+	margin: 0;
+	padding: 0;
+}
+
+/* Pulse animation for count updates */
+@keyframes fwaum-count-update {
+	0% { 
+		transform: scale(1);
+	}
+	50% { 
+		transform: scale(1.2);
+	}
+	100% { 
+		transform: scale(1);
+	}
+}
+
+/* Mobile responsive */
+@media screen and (max-width: 782px) {
+	.fwaum-admin-bar-text {
+		display: none;
+	}
+	
+	.fwaum-admin-bar-icon {
+		font-size: 20px;
+	}
+	
+	.fwaum-online-count {
+		margin-left: 5px;
+		font-size: 14px;
+	}
+}
+
+/* Hover effects */
+#wpadminbar .fwaum-admin-bar-item:hover .fwaum-online-count {
+	color: #fff;
+}
+
+/* Loading state */
+.fwaum-admin-bar-loading .fwaum-online-count {
+	opacity: 0.5;
+}
+
+/* Update indicator */
+.fwaum-count-changed {
+	animation: fwaum-highlight 1s ease-in-out;
+}
+
+@keyframes fwaum-highlight {
+	0%, 100% { 
+		background-color: transparent;
+	}
+	50% { 
+		background-color: rgba(76, 175, 80, 0.2);
+	}
+}

@@ -31,7 +31,7 @@ jobs:
         unzip -o free-version.zip -d temp-extract
         # Remove premium-only files if needed
         # Copy to plugin directory
-        cp -r temp-extract/* ./plugin-name/
+        cp -r temp-extract/* ./fullworks-active-users-monitor/
         rm -rf temp-extract free-version.zip
 
     - name: Commit and Push

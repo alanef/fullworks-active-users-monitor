@@ -8,26 +8,87 @@ NC='\033[0m' # No Color
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 \"Plugin Name\" \"plugin-slug\""
+    echo "Usage: $0 \"Plugin Name\" \"plugin-slug\" [constant-prefix]"
     echo ""
     echo "Example: $0 \"My Awesome Plugin\" \"my-awesome-plugin\""
+    echo "Example: $0 \"My Awesome Plugin\" \"my-awesome-plugin\" \"MYAP\""
+    echo ""
+    echo "Arguments:"
+    echo "  Plugin Name     - The human-readable name of your plugin"
+    echo "  plugin-slug     - The slug for your plugin (lowercase, hyphens)"
+    echo "  constant-prefix - Optional: Custom prefix for constants (min 4 chars, uppercase)"
+    echo "                    If not provided, will auto-generate from slug"
     echo ""
     echo "This script will:"
     echo "  - Rename the plugin directory and main file"
     echo "  - Replace all placeholders with your plugin name"
+    echo "  - Generate WordPress-compliant constant prefixes (min 4 chars)"
     echo "  - Update configuration files"
     exit 1
 }
 
+# Function to generate WordPress-compliant prefix from slug
+generate_prefix() {
+    local slug="$1"
+    local prefix=""
+
+    # Method 1: Take first letter of each hyphenated word
+    IFS='-' read -ra PARTS <<< "$slug"
+    for part in "${PARTS[@]}"; do
+        if [ -n "$part" ]; then
+            prefix="${prefix}${part:0:1}"
+        fi
+    done
+
+    # Convert to uppercase
+    prefix="${prefix^^}"
+
+    # If prefix is less than 4 characters, add digits
+    if [ ${#prefix} -lt 4 ]; then
+        # Calculate how many digits needed
+        local needed=$((4 - ${#prefix}))
+        local digits=""
+        for ((i=1; i<=needed; i++)); do
+            digits="${digits}${i}"
+        done
+        prefix="${prefix}${digits}"
+    fi
+
+    echo "$prefix"
+}
+
 # Check if correct number of arguments
-if [ $# -ne 2 ]; then
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
     usage
 fi
 
 PLUGIN_NAME="$1"
 PLUGIN_SLUG="$2"
 PLUGIN_SLUG_UNDERSCORE="${PLUGIN_SLUG//-/_}"
-PLUGIN_CONSTANT="${PLUGIN_SLUG_UNDERSCORE^^}"
+
+# Handle custom prefix or generate one
+if [ $# -eq 3 ]; then
+    CUSTOM_PREFIX="$3"
+    # Convert to uppercase
+    CUSTOM_PREFIX="${CUSTOM_PREFIX^^}"
+
+    # Validate custom prefix
+    if [ ${#CUSTOM_PREFIX} -lt 4 ]; then
+        echo -e "${RED}Error: Custom prefix must be at least 4 characters long (WordPress requirement)${NC}"
+        exit 1
+    fi
+
+    if ! [[ "$CUSTOM_PREFIX" =~ ^[A-Z][A-Z0-9_]*$ ]]; then
+        echo -e "${RED}Error: Custom prefix must start with a letter and contain only uppercase letters, numbers, and underscores${NC}"
+        exit 1
+    fi
+
+    PLUGIN_CONSTANT="$CUSTOM_PREFIX"
+else
+    # Auto-generate prefix from slug
+    PLUGIN_CONSTANT=$(generate_prefix "$PLUGIN_SLUG")
+fi
+
 PLUGIN_NAMESPACE="$(echo $PLUGIN_NAME | sed 's/ //g')"
 
 echo -e "${GREEN}Setting up plugin: $PLUGIN_NAME ($PLUGIN_SLUG)${NC}"
@@ -50,8 +111,14 @@ echo "  Plugin Name: $PLUGIN_NAME"
 echo "  Plugin Slug: $PLUGIN_SLUG"
 echo "  Text Domain: $PLUGIN_SLUG"
 echo "  Function Prefix: $PLUGIN_SLUG_UNDERSCORE"
-echo "  Constant Prefix: $PLUGIN_CONSTANT"
+if [ $# -eq 3 ]; then
+    echo "  Constant Prefix: $PLUGIN_CONSTANT (user-provided)"
+else
+    echo "  Constant Prefix: $PLUGIN_CONSTANT (auto-generated)"
+fi
 echo "  Namespace: $PLUGIN_NAMESPACE"
+echo ""
+echo -e "${YELLOW}Note: WordPress requires constant prefixes to be at least 4 characters.${NC}"
 echo ""
 
 read -p "Do you want to continue? (y/N) " -n 1 -r
@@ -93,7 +160,7 @@ find . -type f \( \
 \) ! -path "./vendor/*" ! -path "./node_modules/*" ! -path "./.git/*" -print0 | while IFS= read -r -d '' file; do
     # Use temporary file for replacements
     temp_file=$(mktemp)
-    
+
     # Perform replacements
     sed \
         -e "s/Plugin Name/$PLUGIN_NAME/g" \
@@ -102,7 +169,7 @@ find . -type f \( \
         -e "s/plugin_name/$PLUGIN_SLUG_UNDERSCORE/g" \
         -e "s/PLUGIN_NAME/$PLUGIN_CONSTANT/g" \
         "$file" > "$temp_file"
-    
+
     # Move temp file back
     mv "$temp_file" "$file"
 done

@@ -2,7 +2,7 @@
 /**
  * Class SampleTest
  *
- * @package PluginName
+ * @package FullworksActiveUsersMonitor
  */
 
 /**
@@ -30,24 +30,24 @@ class SampleTest extends WP_UnitTestCase {
 	 * Test that plugin is active.
 	 */
 	public function test_plugin_is_active() {
-		$this->assertTrue( function_exists( 'plugin_name_init' ) );
+		$this->assertTrue( function_exists( 'fullworks_active_users_monitor_init' ) );
 	}
 
 	/**
 	 * Test plugin constants are defined.
 	 */
 	public function test_plugin_constants_defined() {
-		$this->assertTrue( defined( 'PLUGIN_NAME_VERSION' ) );
-		$this->assertTrue( defined( 'PLUGIN_NAME_PATH' ) );
-		$this->assertTrue( defined( 'PLUGIN_NAME_URL' ) );
-		$this->assertTrue( defined( 'PLUGIN_NAME_BASENAME' ) );
+		$this->assertTrue( defined( 'FAUM_VERSION' ) );
+		$this->assertTrue( defined( 'FAUM_PATH' ) );
+		$this->assertTrue( defined( 'FAUM_URL' ) );
+		$this->assertTrue( defined( 'FAUM_BASENAME' ) );
 	}
 
 	/**
 	 * Test plugin version.
 	 */
 	public function test_plugin_version() {
-		$this->assertEquals( '1.0.0', PLUGIN_NAME_VERSION );
+		$this->assertEquals( '1.0.0', FAUM_VERSION );
 	}
 
 	/**
@@ -81,11 +81,11 @@ class SampleTest extends WP_UnitTestCase {
 	 */
 	public function test_hooks_registered() {
 		// Test that init hook is registered.
-		$this->assertNotFalse( has_action( 'init', 'plugin_name_init' ) );
+		$this->assertNotFalse( has_action( 'init', 'fullworks_active_users_monitor_init' ) );
 		
 		// Test that script hooks are registered.
-		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', 'plugin_name_admin_enqueue_scripts' ) );
-		$this->assertNotFalse( has_action( 'wp_enqueue_scripts', 'plugin_name_enqueue_scripts' ) );
+		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', 'fullworks_active_users_monitor_admin_enqueue_scripts' ) );
+		$this->assertNotFalse( has_action( 'wp_enqueue_scripts', 'fullworks_active_users_monitor_enqueue_scripts' ) );
 	}
 
 	/**

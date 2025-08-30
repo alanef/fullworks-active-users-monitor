@@ -1,0 +1,225 @@
+/**
+ * Admin styles for Active Users Monitor
+ */
+
+/* Users List Page Styles */
+.fwaum-status-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.fwaum-status-dot {
+	font-size: 16px;
+	line-height: 1;
+	display: inline-block;
+}
+
+.fwaum-status-online .fwaum-status-dot {
+	color: #4caf50;
+	animation: fwaum-pulse 2s infinite;
+}
+
+.fwaum-status-offline .fwaum-status-dot {
+	color: #999;
+}
+
+.fwaum-status-text {
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.fwaum-status-online .fwaum-status-text {
+	color: #4caf50;
+}
+
+.fwaum-status-offline .fwaum-status-text {
+	color: #666;
+}
+
+.fwaum-last-seen {
+	display: block;
+	font-size: 11px;
+	color: #666;
+	margin-top: 2px;
+}
+
+/* Online user visual indicators */
+.fwaum-user-online {
+	padding: 2px 6px !important;
+	border-radius: 4px;
+	display: inline-block !important;
+	position: relative;
+}
+
+.fwaum-user-online.fwaum-role-administrator {
+	border: 2px solid #ff9800;
+	box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+	animation: fwaum-pulse-gold 2s infinite;
+}
+
+.fwaum-user-online:not(.fwaum-role-administrator) {
+	border: 2px solid #4caf50;
+	box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+	animation: fwaum-pulse-green 2s infinite;
+}
+
+.fwaum-online-badge {
+	background: #4caf50;
+	color: white;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 10px;
+	font-weight: bold;
+	margin-left: 8px;
+	display: inline-block;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.fwaum-row-online {
+	background-color: rgba(76, 175, 80, 0.03) !important;
+}
+
+.fwaum-row-online:hover {
+	background-color: rgba(76, 175, 80, 0.06) !important;
+}
+
+/* Role-specific colors */
+.fwaum-role-administrator .fwaum-online-badge {
+	background: #ff9800;
+}
+
+.fwaum-role-editor .fwaum-online-badge {
+	background: #2196f3;
+}
+
+.fwaum-role-author .fwaum-online-badge {
+	background: #4caf50;
+}
+
+.fwaum-role-contributor .fwaum-online-badge {
+	background: #9c27b0;
+}
+
+/* Stats notice */
+.fwaum-stats-notice {
+	margin: 15px 0;
+}
+
+.fwaum-stats-notice p {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	margin: 0.5em 0;
+}
+
+.fwaum-stats-summary {
+	flex: 1;
+}
+
+.fwaum-stats-updated {
+	color: #666;
+	font-size: 12px;
+}
+
+.fwaum-update-time {
+	font-weight: 500;
+}
+
+/* Filter dropdown */
+#fwaum-filter {
+	margin-left: 5px;
+}
+
+/* Animations */
+@keyframes fwaum-pulse {
+	0%, 100% { 
+		opacity: 1;
+	}
+	50% { 
+		opacity: 0.6;
+	}
+}
+
+@keyframes fwaum-pulse-gold {
+	0%, 100% { 
+		box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+		border-color: #ff9800;
+	}
+	50% { 
+		box-shadow: 0 0 15px rgba(255, 152, 0, 0.8);
+		border-color: #ffb74d;
+	}
+}
+
+@keyframes fwaum-pulse-green {
+	0%, 100% { 
+		box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+		border-color: #4caf50;
+	}
+	50% { 
+		box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+		border-color: #66bb6a;
+	}
+}
+
+/* Settings page */
+.fwaum-settings-info {
+	margin-top: 40px;
+	padding: 20px;
+	background: #f0f0f1;
+	border-left: 4px solid #2271b1;
+}
+
+.fwaum-settings-info h2 {
+	margin-top: 0;
+}
+
+.fwaum-settings-info ul {
+	list-style: none;
+	padding-left: 0;
+}
+
+.fwaum-settings-info li {
+	padding: 5px 0;
+}
+
+/* Loading state */
+.fwaum-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.fwaum-loading::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	margin: -10px 0 0 -10px;
+	border: 2px solid #2271b1;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: fwaum-spin 0.8s linear infinite;
+}
+
+@keyframes fwaum-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+	.fwaum-stats-notice p {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+	}
+	
+	.fwaum-online-badge {
+		display: block;
+		margin: 5px 0 0 0;
+		width: fit-content;
+	}
+}
