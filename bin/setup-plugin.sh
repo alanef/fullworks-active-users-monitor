@@ -101,8 +101,8 @@ if ! [[ "$PLUGIN_SLUG" =~ ^[a-z0-9-]+$ ]]; then
 fi
 
 # Check if we're in the right directory
-if [ ! -d "plugin-name" ]; then
-    echo -e "${RED}Error: 'plugin-name' directory not found. Please run this script from the boilerplate root directory.${NC}"
+if [ ! -d "fullworks-active-users-monitor" ]; then
+    echo -e "${RED}Error: 'fullworks-active-users-monitor' directory not found. Please run this script from the boilerplate root directory.${NC}"
     exit 1
 fi
 
@@ -136,11 +136,11 @@ if [ -d "$PLUGIN_SLUG" ]; then
     exit 1
 fi
 
-mv plugin-name "$PLUGIN_SLUG"
+mv fullworks-active-users-monitor "$PLUGIN_SLUG"
 echo "  ✓ Renamed plugin directory"
 
 # Rename main plugin file
-mv "$PLUGIN_SLUG/plugin-name.php" "$PLUGIN_SLUG/$PLUGIN_SLUG.php"
+mv "$PLUGIN_SLUG/fullworks-active-users-monitor.php" "$PLUGIN_SLUG/$PLUGIN_SLUG.php"
 echo "  ✓ Renamed main plugin file"
 
 # Replace placeholders in all files
@@ -165,7 +165,7 @@ find . -type f \( \
     sed \
         -e "s/Plugin Name/$PLUGIN_NAME/g" \
         -e "s/PluginName/$PLUGIN_NAMESPACE/g" \
-        -e "s/plugin-name/$PLUGIN_SLUG/g" \
+        -e "s/fullworks-active-users-monitor/$PLUGIN_SLUG/g" \
         -e "s/plugin_name/$PLUGIN_SLUG_UNDERSCORE/g" \
         -e "s/PLUGIN_NAME/$PLUGIN_CONSTANT/g" \
         "$file" > "$temp_file"
@@ -177,7 +177,7 @@ done
 echo "  ✓ Replaced placeholders in files"
 
 # Update .wp-env.json specifically
-sed -i "s|\"./plugin-name\"|\"./\$PLUGIN_SLUG\"|g" .wp-env.json
+sed -i "s|\"./fullworks-active-users-monitor\"|\"./\$PLUGIN_SLUG\"|g" .wp-env.json
 echo "  ✓ Updated .wp-env.json"
 
 # Make scripts executable

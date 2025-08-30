@@ -18,14 +18,14 @@ jobs:
   release:
     needs: quality-checks
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Extract PHP version
       id: php_version
       run: |
-        PHP_VERSION=$(grep -oP 'Requires PHP:\s*\K[\d.]+' plugin-name/plugin-name.php || echo "7.4")
+        PHP_VERSION=$(grep -oP 'Requires PHP:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php || echo "7.4")
         echo "version=$PHP_VERSION" >> $GITHUB_OUTPUT
 
     - name: Setup PHP
@@ -39,11 +39,11 @@ jobs:
       run: |
         TAG_VERSION=${GITHUB_REF#refs/tags/}
         TAG_VERSION=${TAG_VERSION#v}
-        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' plugin-name/plugin-name.php)
-        
+        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+
         echo "Tag version: $TAG_VERSION"
         echo "Plugin version: $PLUGIN_VERSION"
-        
+
         if [ "$TAG_VERSION" != "$PLUGIN_VERSION" ]; then
           echo "Tag version does not match plugin version!"
           exit 1
@@ -59,32 +59,32 @@ jobs:
     - name: Build plugin
       run: |
         # Use WP-CLI to build the plugin archive
-        wp dist-archive ./plugin-name ./plugin-name.zip
-        
+        wp dist-archive ./fullworks-active-users-monitor ./fullworks-active-users-monitor.zip
+
         # Create dist directory for consistency with build script
         mkdir -p dist
-        mv plugin-name.zip dist/
-        
+        mv fullworks-active-users-monitor.zip dist/
+
         # Also rename with version for better release management
-        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' plugin-name/plugin-name.php)
-        cp dist/plugin-name.zip "dist/plugin-name-${PLUGIN_VERSION}.zip"
-        
+        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+        cp dist/fullworks-active-users-monitor.zip "dist/fullworks-active-users-monitor-${PLUGIN_VERSION}.zip"
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         files: dist/*.zip
         body: |
           Release of Plugin Name v${{ github.ref_name }}
-          
+
           ## Installation
-          1. Download `plugin-name.zip` from the assets below
+          1. Download `fullworks-active-users-monitor.zip` from the assets below
           2. In WordPress admin, go to Plugins > Add New > Upload Plugin
           3. Choose the downloaded zip file and click Install Now
           4. Activate the plugin
           5. Configure the plugin in Settings > Plugin Name
-          
+
           ## Changelog
-          See [readme.txt](plugin-name/readme.txt) for detailed changelog.
+          See [readme.txt](fullworks-active-users-monitor/readme.txt) for detailed changelog.
         draft: false
         prerelease: false
       env:

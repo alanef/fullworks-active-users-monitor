@@ -10,14 +10,14 @@ on:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Extract PHP version
       id: php_version
       run: |
-        PHP_VERSION=$(grep -oP 'Requires PHP:\s*\K[\d.]+' plugin-name/plugin-name.php || echo "7.4")
+        PHP_VERSION=$(grep -oP 'Requires PHP:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php || echo "7.4")
         echo "version=$PHP_VERSION" >> $GITHUB_OUTPUT
 
     - name: Setup PHP
@@ -49,17 +49,17 @@ jobs:
         if composer show -i | grep -q "phpcompatibility"; then
           composer run-script phpcompat
         else
-          ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4- --extensions=php plugin-name/
+          ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4- --extensions=php fullworks-active-users-monitor/
         fi
 
     - name: Check version consistency
       run: |
-        PLUGIN_VERSION=$(sed -n 's/ \* Version:\s*\(.*\)/\1/p' plugin-name/plugin-name.php)
-        CONSTANT_VERSION=$(sed -n "s/define( 'PLUGIN_NAME_VERSION', '\(.*\)' );/\1/p" plugin-name/plugin-name.php)
-        
+        PLUGIN_VERSION=$(sed -n 's/ \* Version:\s*\(.*\)/\1/p' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+        CONSTANT_VERSION=$(sed -n "s/define( 'PLUGIN_NAME_VERSION', '\(.*\)' );/\1/p" fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+
         echo "Plugin header version: $PLUGIN_VERSION"
         echo "Version constant: $CONSTANT_VERSION"
-        
+
         if [ "$PLUGIN_VERSION" != "$CONSTANT_VERSION" ]; then
           echo "Version mismatch detected!"
           exit 1
@@ -70,11 +70,11 @@ jobs:
 
     - name: Build plugin
       run: |
-        wp dist-archive ./plugin-name ./plugin-name.zip
+        wp dist-archive ./fullworks-active-users-monitor ./fullworks-active-users-monitor.zip
         mkdir tmp-build
-        unzip plugin-name.zip -d tmp-build
+        unzip fullworks-active-users-monitor.zip -d tmp-build
 
     - name: WordPress Plugin Check
       uses: wordpress/plugin-check-action@v1
       with:
-        build-dir: 'tmp-build/plugin-name'
+        build-dir: 'tmp-build/fullworks-active-users-monitor'
