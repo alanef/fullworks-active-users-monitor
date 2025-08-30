@@ -55,7 +55,7 @@ jobs:
     - name: Check version consistency
       run: |
         PLUGIN_VERSION=$(sed -n 's/ \* Version:\s*\(.*\)/\1/p' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
-        CONSTANT_VERSION=$(sed -n "s/define( 'PLUGIN_NAME_VERSION', '\(.*\)' );/\1/p" fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+        CONSTANT_VERSION=$(sed -n "s/define( 'FWAUM_VERSION', '\(.*\)' );/\1/p" fullworks-active-users-monitor/fullworks-active-users-monitor.php)
 
         echo "Plugin header version: $PLUGIN_VERSION"
         echo "Version constant: $CONSTANT_VERSION"
