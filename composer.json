@@ -36,9 +36,12 @@
     "scripts": {
         "lint": "./vendor/bin/phpcs",
         "lint:fix": "./vendor/bin/phpcbf",
+        "phpcs-security": "./vendor/bin/phpcs -p --standard=phpcs_sec.xml",
+        "phpcompat": "./vendor/bin/phpcs -p --standard=PHPCompatibilityWP --ignore=*/vendor/* --extensions=php --runtime-set testVersion 7.4- plugin-name",
         "test": "./vendor/bin/phpunit",
         "test:unit": "./vendor/bin/phpunit --testsuite unit",
-        "test:integration": "./vendor/bin/phpunit --testsuite integration"
+        "test:integration": "./vendor/bin/phpunit --testsuite integration",
+        "build": "rm -rf dist && mkdir -p dist && wp dist-archive ./plugin-name ./dist/plugin-name.zip --plugin-dirname=plugin-name"
     },
     "scripts-descriptions": {
         "lint": "Run PHP_CodeSniffer to detect coding standard violations",
