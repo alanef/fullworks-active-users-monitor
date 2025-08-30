@@ -142,6 +142,10 @@ class Ajax_Handler {
 			} elseif ( 'offline' === $filter ) {
 				$online_users = $this->user_tracker->get_online_users( false );
 				if ( ! empty( $online_users ) ) {
+					// Note: Using 'exclude' parameter is necessary here to show offline users.
+					// While this can impact performance on sites with many users, it's required
+					// for accurate filtering. The impact is mitigated by our caching strategy.
+					// phpcs:ignore WordPress.VIP.PostsPerPage.exclude_parameter -- Required for offline users filter
 					$args['exclude'] = $online_users;
 				}
 			}
