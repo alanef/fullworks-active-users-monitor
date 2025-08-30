@@ -449,8 +449,8 @@ class CLI_Command extends \WP_CLI_Command {
 
 			// Clear screen (works on most terminals).
 			if ( $iteration > 1 ) {
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_passthru -- Required for clearing terminal screen in CLI environment. WP-CLI commands run in trusted terminal context where system calls are expected and safe.
-				passthru( 'clear' );
+				// Use ANSI escape codes to clear screen instead of passthru.
+				echo "\033[2J\033[H";
 			}
 
 			// Get fresh data.

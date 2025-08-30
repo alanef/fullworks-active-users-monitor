@@ -23,9 +23,11 @@ function fwaum_uninstall_cleanup() {
 	// Delete plugin transients.
 	delete_transient( 'fwaum_online_users_cache' );
 
-	// Delete user meta.
-	global $wpdb;
-	$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = 'fwaum_last_login'" );
+	// Delete user meta for all users.
+	$users = get_users( array( 'fields' => 'ID' ) );
+	foreach ( $users as $user_id ) {
+		delete_user_meta( $user_id, 'fwaum_last_login' );
+	}
 
 	// Clear any cached data.
 	wp_cache_flush();

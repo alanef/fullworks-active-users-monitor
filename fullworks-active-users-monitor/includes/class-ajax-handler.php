@@ -116,8 +116,8 @@ class Ajax_Handler {
 		}
 
 		// Get page of users to update.
-		$page     = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
-		$per_page = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 20;
+		$page     = isset( $_POST['page'] ) ? absint( wp_unslash( $_POST['page'] ) ) : 1;
+		$per_page = isset( $_POST['per_page'] ) ? absint( wp_unslash( $_POST['per_page'] ) ) : 20;
 
 		// Clear cache for fresh data.
 		$this->user_tracker->clear_cache();
@@ -131,7 +131,7 @@ class Ajax_Handler {
 
 		// Apply filter if set.
 		if ( isset( $_POST['filter'] ) && ! empty( $_POST['filter'] ) ) {
-			$filter = sanitize_text_field( $_POST['filter'] );
+			$filter = sanitize_text_field( wp_unslash( $_POST['filter'] ) );
 			if ( 'online' === $filter ) {
 				$online_users = $this->user_tracker->get_online_users( false );
 				if ( empty( $online_users ) ) {
@@ -200,7 +200,7 @@ class Ajax_Handler {
 		}
 
 		// Get user ID.
-		$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+		$user_id = isset( $_POST['user_id'] ) ? absint( wp_unslash( $_POST['user_id'] ) ) : 0;
 		if ( ! $user_id ) {
 			wp_send_json_error( __( 'Invalid user ID', 'fullworks-active-users-monitor' ) );
 		}

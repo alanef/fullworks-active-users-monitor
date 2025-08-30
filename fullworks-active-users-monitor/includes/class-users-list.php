@@ -178,7 +178,7 @@ class Users_List {
 
 		// Get current filter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for filter display
-		$current_filter = isset( $_GET['fwaum_filter'] ) ? sanitize_text_field( $_GET['fwaum_filter'] ) : '';
+		$current_filter = isset( $_GET['fwaum_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['fwaum_filter'] ) ) : '';
 
 		// Build URLs preserving other parameters.
 		$base_url = admin_url( 'users.php' );
@@ -241,7 +241,7 @@ class Users_List {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for query filtering
-		$filter = sanitize_text_field( $_GET['fwaum_filter'] );
+		$filter = sanitize_text_field( wp_unslash( $_GET['fwaum_filter'] ) );
 
 		if ( 'online' === $filter ) {
 			$online_users = $this->user_tracker->get_online_users();

@@ -132,7 +132,6 @@ class Plugin {
 		$this->dashboard_widget = new Includes\Dashboard_Widget( $this->user_tracker );
 
 		// Register hooks.
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_admin_bar_assets' ) );
 		add_filter( 'plugin_action_links_' . FWAUM_PLUGIN_BASENAME, array( $this, 'add_settings_link' ) );
@@ -143,16 +142,6 @@ class Plugin {
 		}
 	}
 
-	/**
-	 * Load plugin textdomain
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain(
-			'fullworks-active-users-monitor',
-			false,
-			dirname( FWAUM_PLUGIN_BASENAME ) . '/languages/'
-		);
-	}
 
 	/**
 	 * Enqueue admin assets

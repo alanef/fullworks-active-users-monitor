@@ -1,9 +1,9 @@
 === Fullworks Active Users Monitor ===
 Contributors: alanef, fullworks
 Donate link: https://fullworks.net/
-Tags: users, monitoring, active users, online users, user tracking, admin tools, session management
+Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 5.9
-Tested up to: 6.7
+Tested up to: 6.8
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
