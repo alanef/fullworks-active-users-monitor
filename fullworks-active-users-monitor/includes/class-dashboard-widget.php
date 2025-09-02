@@ -192,7 +192,7 @@ class Dashboard_Widget {
 		// Enqueue CSS.
 		wp_enqueue_style(
 			'fwaum-dashboard-widget',
-			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/dashboard-widget.css',
+			plugin_dir_url( __DIR__ ) . 'admin/css/dashboard-widget.css',
 			array(),
 			FWAUM_VERSION
 		);
@@ -200,7 +200,7 @@ class Dashboard_Widget {
 		// Enqueue JavaScript.
 		wp_enqueue_script(
 			'fwaum-dashboard-widget',
-			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/js/dashboard-widget.js',
+			plugin_dir_url( __DIR__ ) . 'admin/js/dashboard-widget.js',
 			array( 'jquery' ),
 			FWAUM_VERSION,
 			true

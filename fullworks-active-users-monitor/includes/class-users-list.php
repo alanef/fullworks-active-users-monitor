@@ -338,7 +338,7 @@ class Users_List {
 		// Enqueue CSS.
 		wp_enqueue_style(
 			'fwaum-users-list',
-			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/users-list.css',
+			plugin_dir_url( __DIR__ ) . 'admin/css/users-list.css',
 			array(),
 			FWAUM_VERSION
 		);
@@ -348,7 +348,7 @@ class Users_List {
 			wp_add_inline_style( 'fwaum-users-list', 'body { --fwaum-animations: enabled; }' );
 			add_filter(
 				'admin_body_class',
-				function( $classes ) {
+				function ( $classes ) {
 					return $classes . ' fwaum-animations-enabled';
 				}
 			);
@@ -357,7 +357,7 @@ class Users_List {
 		// Enqueue JavaScript.
 		wp_enqueue_script(
 			'fwaum-users-list',
-			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/js/users-list.js',
+			plugin_dir_url( __DIR__ ) . 'admin/js/users-list.js',
 			array( 'jquery' ),
 			FWAUM_VERSION,
 			true
