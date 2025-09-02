@@ -39,6 +39,7 @@ class Dashboard_Widget {
 
 		if ( $enabled ) {
 			add_action( 'wp_dashboard_setup', array( $this, 'add_dashboard_widget' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		}
 	}
 
@@ -175,165 +176,45 @@ class Dashboard_Widget {
 				</p>
 			</div>
 		</div>
-
-		<style type="text/css">
-			.fwaum-dashboard-widget {
-				padding: 0;
-			}
-			.fwaum-dashboard-summary {
-				text-align: center;
-				padding: 20px 0;
-				border-bottom: 1px solid #e1e1e1;
-			}
-			.fwaum-big-number {
-				display: block;
-				font-size: 48px;
-				font-weight: 300;
-				line-height: 1;
-				color: #2271b1;
-			}
-			.fwaum-label {
-				display: block;
-				margin-top: 10px;
-				font-size: 14px;
-				color: #646970;
-			}
-			.fwaum-role-breakdown {
-				padding: 15px;
-				border-bottom: 1px solid #e1e1e1;
-			}
-			.fwaum-role-breakdown h4 {
-				margin: 0 0 10px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			.fwaum-role-list {
-				margin: 0;
-				padding: 0;
-				list-style: none;
-			}
-			.fwaum-role-item {
-				display: flex;
-				align-items: center;
-				padding: 5px 0;
-			}
-			.fwaum-role-indicator {
-				width: 10px;
-				height: 10px;
-				border-radius: 50%;
-				margin-right: 8px;
-				background: #646970;
-			}
-			.fwaum-role-administrator .fwaum-role-indicator {
-				background: #ff9800;
-			}
-			.fwaum-role-editor .fwaum-role-indicator {
-				background: #2196f3;
-			}
-			.fwaum-role-author .fwaum-role-indicator {
-				background: #4caf50;
-			}
-			.fwaum-role-contributor .fwaum-role-indicator {
-				background: #9c27b0;
-			}
-			.fwaum-role-name {
-				flex: 1;
-				font-size: 13px;
-			}
-			.fwaum-role-count {
-				font-weight: 600;
-				color: #2271b1;
-			}
-			.fwaum-recent-users {
-				padding: 15px;
-				border-bottom: 1px solid #e1e1e1;
-			}
-			.fwaum-recent-users h4 {
-				margin: 0 0 10px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			.fwaum-user-list {
-				margin: 0;
-				padding: 0;
-				list-style: none;
-			}
-			.fwaum-user-item {
-				display: flex;
-				align-items: center;
-				padding: 8px 0;
-				border-bottom: 1px solid #f0f0f1;
-			}
-			.fwaum-user-item:last-child {
-				border-bottom: none;
-			}
-			.fwaum-user-item img {
-				border-radius: 50%;
-				margin-right: 10px;
-			}
-			.fwaum-user-info {
-				flex: 1;
-			}
-			.fwaum-user-info a {
-				text-decoration: none;
-				font-weight: 500;
-			}
-			.fwaum-user-role {
-				display: block;
-				font-size: 11px;
-				color: #646970;
-			}
-			.fwaum-online-indicator {
-				color: #4caf50;
-				font-size: 16px;
-			}
-			.fwaum-dashboard-footer {
-				padding: 12px 15px;
-				background: #f6f7f7;
-			}
-			.fwaum-links {
-				margin: 0 0 5px;
-				font-size: 13px;
-			}
-			.fwaum-links .separator {
-				margin: 0 5px;
-				color: #646970;
-			}
-			.fwaum-last-updated {
-				margin: 0;
-				color: #646970;
-			}
-		</style>
-
-		<script type="text/javascript">
-		jQuery(document).ready(function($) {
-			// Auto-refresh dashboard widget.
-			var refreshInterval = <?php echo esc_js( get_option( 'fwaum_settings' )['refresh_interval'] ?? 30 ); ?> * 1000;
-			
-			function refreshDashboardWidget() {
-				$.post(ajaxurl, {
-					action: 'fwaum_get_online_users',
-					nonce: '<?php echo esc_js( wp_create_nonce( 'fwaum_ajax_nonce' ) ); ?>'
-				}, function(response) {
-					if (response.success) {
-						// Update timestamp.
-						var now = new Date();
-						$('.fwaum-timestamp').text(now.toLocaleTimeString());
-						
-						// Update count.
-						$('.fwaum-big-number').text(response.data.total);
-						
-						// Could also update the user list here if needed.
-					}
-				});
-			}
-			
-			// Set up auto-refresh.
-			if (refreshInterval > 0) {
-				setInterval(refreshDashboardWidget, refreshInterval);
-			}
-		});
-		</script>
 		<?php
+	}
+
+	/**
+	 * Enqueue scripts and styles for dashboard widget
+	 *
+	 * @param string $hook Current admin page.
+	 */
+	public function enqueue_scripts( $hook ) {
+		if ( 'index.php' !== $hook ) {
+			return;
+		}
+
+		// Enqueue CSS.
+		wp_enqueue_style(
+			'fwaum-dashboard-widget',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/dashboard-widget.css',
+			array(),
+			FWAUM_VERSION
+		);
+
+		// Enqueue JavaScript.
+		wp_enqueue_script(
+			'fwaum-dashboard-widget',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/js/dashboard-widget.js',
+			array( 'jquery' ),
+			FWAUM_VERSION,
+			true
+		);
+
+		// Localize script with data.
+		$settings = get_option( 'fwaum_settings', array() );
+		wp_localize_script(
+			'fwaum-dashboard-widget',
+			'fwaum_dashboard',
+			array(
+				'nonce'            => wp_create_nonce( 'fwaum_ajax_nonce' ),
+				'refresh_interval' => isset( $settings['refresh_interval'] ) ? $settings['refresh_interval'] : 30,
+			)
+		);
 	}
 }

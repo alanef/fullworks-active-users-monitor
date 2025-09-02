@@ -197,17 +197,17 @@ class User_Tracker {
 		$last_seen = $this->get_user_last_seen( $user_id );
 
 		if ( false === $last_seen ) {
-			return __( 'Never', 'fullworks-active-users-monitor' );
+			return esc_html__( 'Never', 'fullworks-active-users-monitor' );
 		}
 
 		if ( $this->is_user_online( $user_id ) ) {
-			return __( 'Online now', 'fullworks-active-users-monitor' );
+			return esc_html__( 'Online now', 'fullworks-active-users-monitor' );
 		}
 
 		$time_diff = time() - $last_seen;
 
 		if ( $time_diff < MINUTE_IN_SECONDS ) {
-			return __( 'Just now', 'fullworks-active-users-monitor' );
+			return esc_html__( 'Just now', 'fullworks-active-users-monitor' );
 		} elseif ( $time_diff < HOUR_IN_SECONDS ) {
 			$minutes = round( $time_diff / MINUTE_IN_SECONDS );
 			/* translators: %d: Number of minutes */

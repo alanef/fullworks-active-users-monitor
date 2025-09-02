@@ -61,7 +61,7 @@ class Admin_Bar {
 		// Build the title.
 		$title = sprintf(
 			'<span class="fwaum-admin-bar-icon">👥</span> <span class="fwaum-admin-bar-text">%s: <span class="fwaum-online-count">%d</span></span>',
-			__( 'Users Online', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Users Online', 'fullworks-active-users-monitor' ),
 			$online_count
 		);
 
@@ -73,7 +73,7 @@ class Admin_Bar {
 				'href'  => admin_url( 'users.php?fwaum_filter=online' ),
 				'meta'  => array(
 					'class' => 'fwaum-admin-bar-item',
-					'title' => __( 'View online users', 'fullworks-active-users-monitor' ),
+					'title' => esc_html__( 'View online users', 'fullworks-active-users-monitor' ),
 				),
 			)
 		);
@@ -84,7 +84,7 @@ class Admin_Bar {
 				array(
 					'parent' => 'fwaum-online-users',
 					'id'     => 'fwaum-role-breakdown',
-					'title'  => '<strong>' . __( 'Online by Role:', 'fullworks-active-users-monitor' ) . '</strong>',
+					'title'  => '<strong>' . esc_html__( 'Online by Role:', 'fullworks-active-users-monitor' ) . '</strong>',
 					'meta'   => array(
 						'class' => 'fwaum-role-header',
 					),
@@ -148,7 +148,7 @@ class Admin_Bar {
 			array(
 				'parent' => 'fwaum-online-users',
 				'id'     => 'fwaum-view-all',
-				'title'  => __( 'View All Users', 'fullworks-active-users-monitor' ),
+				'title'  => esc_html__( 'View All Users', 'fullworks-active-users-monitor' ),
 				'href'   => admin_url( 'users.php' ),
 			)
 		);
@@ -159,7 +159,7 @@ class Admin_Bar {
 				array(
 					'parent' => 'fwaum-online-users',
 					'id'     => 'fwaum-settings',
-					'title'  => __( 'Settings', 'fullworks-active-users-monitor' ),
+					'title'  => esc_html__( 'Settings', 'fullworks-active-users-monitor' ),
 					'href'   => admin_url( 'options-general.php?page=fwaum-settings' ),
 				)
 			);

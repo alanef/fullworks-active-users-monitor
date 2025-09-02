@@ -59,8 +59,8 @@ class Users_List {
 		add_filter( 'manage_users_custom_column', array( $this, 'render_online_status_column' ), 10, 3 );
 		add_filter( 'manage_users_sortable_columns', array( $this, 'make_online_status_sortable' ) );
 
-		// Add inline styles for visual indicators.
-		add_action( 'admin_head', array( $this, 'add_inline_styles' ) );
+		// Enqueue scripts and styles.
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// Add stats summary.
 		add_action( 'admin_notices', array( $this, 'display_online_stats' ) );
@@ -78,7 +78,7 @@ class Users_List {
 		foreach ( $columns as $key => $value ) {
 			$new_columns[ $key ] = $value;
 			if ( 'username' === $key ) {
-				$new_columns['fwaum_status'] = __( 'Online Status', 'fullworks-active-users-monitor' );
+				$new_columns['fwaum_status'] = esc_html__( 'Online Status', 'fullworks-active-users-monitor' );
 			}
 		}
 		return $new_columns;
@@ -104,7 +104,7 @@ class Users_List {
 
 		$status_class = $is_online ? 'online' : 'offline';
 		$status_icon  = $is_online ? '●' : '○';
-		$status_text  = $is_online ? __( 'Online', 'fullworks-active-users-monitor' ) : __( 'Offline', 'fullworks-active-users-monitor' );
+		$status_text  = $is_online ? esc_html__( 'Online', 'fullworks-active-users-monitor' ) : esc_html__( 'Offline', 'fullworks-active-users-monitor' );
 
 		$output = sprintf(
 			'<span class="fwaum-status-indicator fwaum-status-%1$s" data-user-id="%2$d">
@@ -126,26 +126,17 @@ class Users_List {
 
 		$output .= '</span>';
 
-		// Add badge next to username via JavaScript.
+		// Store data for JavaScript to process later.
 		if ( $is_online ) {
 			$user      = get_userdata( $user_id );
 			$user_role = $user->roles[0] ?? 'subscriber';
 
+			// Add data attribute for JavaScript to process.
 			$output .= sprintf(
-				'<script>
-				jQuery(document).ready(function($) {
-					var row = $("tr#user-%1$d");
-					var usernameCell = row.find("td.username");
-					if (!usernameCell.find(".fwaum-online-badge").length) {
-						usernameCell.find("strong").addClass("fwaum-user-online fwaum-role-%2$s");
-						usernameCell.find("strong a").after(\'<span class="fwaum-online-badge">%3$s</span>\');
-						row.addClass("fwaum-row-online");
-					}
-				});
-				</script>',
-				esc_js( $user_id ),
-				esc_js( $user_role ),
-				esc_js( __( 'ONLINE', 'fullworks-active-users-monitor' ) )
+				'<span class="fwaum-online-data" data-user-id="%1$d" data-user-role="%2$s" data-badge-text="%3$s" style="display:none;"></span>',
+				esc_attr( $user_id ),
+				esc_attr( $user_role ),
+				esc_attr( esc_html__( 'ONLINE', 'fullworks-active-users-monitor' ) )
 			);
 		}
 
@@ -182,8 +173,28 @@ class Users_List {
 
 		// Build URLs preserving other parameters.
 		$base_url = admin_url( 'users.php' );
+		// Build safe URL parameters, only preserving known safe parameters.
+		$url_params = array();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
-		$url_params = $_GET;
+		if ( isset( $_GET['orderby'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+			$url_params['orderby'] = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+		if ( isset( $_GET['order'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+			$url_params['order'] = sanitize_text_field( wp_unslash( $_GET['order'] ) );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+		if ( isset( $_GET['role'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+			$url_params['role'] = sanitize_text_field( wp_unslash( $_GET['role'] ) );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+		if ( isset( $_GET['s'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameters for URL building
+			$url_params['s'] = sanitize_text_field( wp_unslash( $_GET['s'] ) );
+		}
 
 		// Online link.
 		$url_params['fwaum_filter'] = 'online';
@@ -193,7 +204,7 @@ class Users_List {
 			'<a href="%s" class="%s">%s <span class="count">(%s)</span></a>',
 			esc_url( $online_url ),
 			esc_attr( $online_class ),
-			__( 'Online', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Online', 'fullworks-active-users-monitor' ),
 			number_format_i18n( $online_count )
 		);
 
@@ -205,7 +216,7 @@ class Users_List {
 			'<a href="%s" class="%s">%s <span class="count">(%s)</span></a>',
 			esc_url( $offline_url ),
 			esc_attr( $offline_class ),
-			__( 'Offline', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Offline', 'fullworks-active-users-monitor' ),
 			number_format_i18n( $offline_count )
 		);
 
@@ -287,7 +298,7 @@ class Users_List {
 			}
 		}
 
-		$summary_text = ! empty( $role_summary ) ? implode( ', ', $role_summary ) : __( 'No users online', 'fullworks-active-users-monitor' );
+		$summary_text = ! empty( $role_summary ) ? implode( ', ', $role_summary ) : esc_html__( 'No users online', 'fullworks-active-users-monitor' );
 
 		?>
 		<div class="notice notice-info fwaum-stats-notice">
@@ -312,89 +323,67 @@ class Users_List {
 	}
 
 	/**
-	 * Add inline styles for visual indicators
+	 * Enqueue scripts and styles for users list
+	 *
+	 * @param string $hook Current admin page.
 	 */
-	public function add_inline_styles() {
+	public function enqueue_scripts( $hook ) {
+		if ( 'users.php' !== $hook ) {
+			return;
+		}
+
 		$options           = get_option( 'fwaum_settings', array() );
 		$enable_animations = isset( $options['enable_animations'] ) ? $options['enable_animations'] : true;
 
-		?>
-		<style type="text/css">
-			/* Temporary inline styles - will be moved to CSS file */
-			.fwaum-user-online.fwaum-role-administrator {
-				padding: 2px 6px;
-				border: 2px solid #ff9800;
-				border-radius: 4px;
-				box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
-				display: inline-block;
-				<?php if ( $enable_animations ) : ?>
-				animation: fwaum-pulse-gold 2s infinite;
-				<?php endif; ?>
+		// Enqueue CSS.
+		wp_enqueue_style(
+			'fwaum-users-list',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/users-list.css',
+			array(),
+			FWAUM_VERSION
+		);
+
+		// Add class to body tag for animations.
+		if ( $enable_animations ) {
+			wp_add_inline_style( 'fwaum-users-list', 'body { --fwaum-animations: enabled; }' );
+			add_filter(
+				'admin_body_class',
+				function( $classes ) {
+					return $classes . ' fwaum-animations-enabled';
+				}
+			);
+		}
+
+		// Enqueue JavaScript.
+		wp_enqueue_script(
+			'fwaum-users-list',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/js/users-list.js',
+			array( 'jquery' ),
+			FWAUM_VERSION,
+			true
+		);
+
+		// Collect online users data for JavaScript.
+		$online_users      = $this->user_tracker->get_online_users();
+		$online_users_data = array();
+		foreach ( $online_users as $user_id ) {
+			$user = get_userdata( $user_id );
+			if ( $user ) {
+				$online_users_data[] = array(
+					'user_id'    => $user_id,
+					'user_role'  => $user->roles[0] ?? 'subscriber',
+					'badge_text' => esc_html__( 'ONLINE', 'fullworks-active-users-monitor' ),
+				);
 			}
-			
-			.fwaum-user-online:not(.fwaum-role-administrator) {
-				padding: 2px 6px;
-				border: 2px solid #4caf50;
-				border-radius: 4px;
-				display: inline-block;
-				<?php if ( $enable_animations ) : ?>
-				animation: fwaum-pulse-green 2s infinite;
-				<?php endif; ?>
-			}
-			
-			.fwaum-online-badge {
-				background: #4caf50;
-				color: white;
-				padding: 2px 6px;
-				border-radius: 3px;
-				font-size: 10px;
-				font-weight: bold;
-				margin-left: 8px;
-				display: inline-block;
-			}
-			
-			.fwaum-row-online {
-				background-color: rgba(76, 175, 80, 0.05) !important;
-			}
-			
-			.fwaum-status-indicator {
-				display: flex;
-				align-items: center;
-				gap: 5px;
-			}
-			
-			.fwaum-status-dot {
-				font-size: 16px;
-				line-height: 1;
-			}
-			
-			.fwaum-status-online .fwaum-status-dot {
-				color: #4caf50;
-			}
-			
-			.fwaum-status-offline .fwaum-status-dot {
-				color: #999;
-			}
-			
-			.fwaum-last-seen {
-				font-size: 11px;
-				color: #666;
-				display: block;
-				margin-top: 2px;
-			}
-			
-			<?php if ( $enable_animations ) : ?>
-			@keyframes fwaum-pulse-gold {
-				0%, 100% { box-shadow: 0 0 5px rgba(255, 152, 0, 0.5); }
-				50% { box-shadow: 0 0 15px rgba(255, 152, 0, 0.8); }
-			}
-			
-			@keyframes fwaum-pulse-green {
-				0%, 100% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
-				50% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.8); }
-			}
-			<?php endif; ?>
-		</style>
-		<?php
+		}
+
+		// Localize script with data.
+		wp_localize_script(
+			'fwaum-users-list',
+			'fwaum_users_list',
+			array(
+				'online_users' => $online_users_data,
+			)
+		);
 	}
 }

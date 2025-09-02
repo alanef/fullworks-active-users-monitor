@@ -55,7 +55,7 @@ class Settings {
 		// General Settings Section.
 		add_settings_section(
 			'fwaum_general_section',
-			__( 'General Settings', 'fullworks-active-users-monitor' ),
+			esc_html__( 'General Settings', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_general_section' ),
 			'fwaum-settings'
 		);
@@ -63,26 +63,26 @@ class Settings {
 		// Admin Bar setting.
 		add_settings_field(
 			'enable_admin_bar',
-			__( 'Enable Admin Bar Counter', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Enable Admin Bar Counter', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_checkbox_field' ),
 			'fwaum-settings',
 			'fwaum_general_section',
 			array(
 				'field' => 'enable_admin_bar',
-				'label' => __( 'Show online users counter in admin bar', 'fullworks-active-users-monitor' ),
+				'label' => esc_html__( 'Show online users counter in admin bar', 'fullworks-active-users-monitor' ),
 			)
 		);
 
 		// Refresh interval setting.
 		add_settings_field(
 			'refresh_interval',
-			__( 'Refresh Interval', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Refresh Interval', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_number_field' ),
 			'fwaum-settings',
 			'fwaum_general_section',
 			array(
 				'field' => 'refresh_interval',
-				'label' => __( 'seconds (15-300)', 'fullworks-active-users-monitor' ),
+				'label' => esc_html__( 'seconds (15-300)', 'fullworks-active-users-monitor' ),
 				'min'   => 15,
 				'max'   => 300,
 				'step'  => 5,
@@ -92,20 +92,20 @@ class Settings {
 		// Dashboard widget setting.
 		add_settings_field(
 			'enable_dashboard',
-			__( 'Enable Dashboard Widget', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Enable Dashboard Widget', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_checkbox_field' ),
 			'fwaum-settings',
 			'fwaum_general_section',
 			array(
 				'field' => 'enable_dashboard',
-				'label' => __( 'Show online users widget on dashboard', 'fullworks-active-users-monitor' ),
+				'label' => esc_html__( 'Show online users widget on dashboard', 'fullworks-active-users-monitor' ),
 			)
 		);
 
 		// Display Settings Section.
 		add_settings_section(
 			'fwaum_display_section',
-			__( 'Display Settings', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Display Settings', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_display_section' ),
 			'fwaum-settings'
 		);
@@ -113,33 +113,33 @@ class Settings {
 		// Show last seen setting.
 		add_settings_field(
 			'show_last_seen',
-			__( 'Show Last Seen', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Show Last Seen', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_checkbox_field' ),
 			'fwaum-settings',
 			'fwaum_display_section',
 			array(
 				'field' => 'show_last_seen',
-				'label' => __( 'Display last seen time for offline users', 'fullworks-active-users-monitor' ),
+				'label' => esc_html__( 'Display last seen time for offline users', 'fullworks-active-users-monitor' ),
 			)
 		);
 
 		// Enable animations setting.
 		add_settings_field(
 			'enable_animations',
-			__( 'Enable Animations', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Enable Animations', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_checkbox_field' ),
 			'fwaum-settings',
 			'fwaum_display_section',
 			array(
 				'field' => 'enable_animations',
-				'label' => __( 'Enable pulse animations for online indicators', 'fullworks-active-users-monitor' ),
+				'label' => esc_html__( 'Enable pulse animations for online indicators', 'fullworks-active-users-monitor' ),
 			)
 		);
 
 		// Permission Settings Section.
 		add_settings_section(
 			'fwaum_permission_section',
-			__( 'Permission Settings', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Permission Settings', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_permission_section' ),
 			'fwaum-settings'
 		);
@@ -147,7 +147,7 @@ class Settings {
 		// Roles that can see online status.
 		add_settings_field(
 			'view_roles',
-			__( 'Who Can See Online Status', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Who Can See Online Status', 'fullworks-active-users-monitor' ),
 			array( $this, 'render_roles_field' ),
 			'fwaum-settings',
 			'fwaum_permission_section',
@@ -214,7 +214,7 @@ class Settings {
 			add_settings_error(
 				'fwaum_messages',
 				'fwaum_message',
-				__( 'Settings saved successfully.', 'fullworks-active-users-monitor' ),
+				esc_html__( 'Settings saved successfully.', 'fullworks-active-users-monitor' ),
 				'updated'
 			);
 		}
