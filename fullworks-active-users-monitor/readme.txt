@@ -1,5 +1,5 @@
 === Fullworks Active Users Monitor ===
-Contributors: fullworks
+Contributors: fullworks,alanfuller
 Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 5.9
