@@ -1,0 +1,48 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/wp-admin/users.php",
+  "preferredVersions": {
+    "php": "8.0",
+    "wp": "latest"
+  },
+  "phpExtensionBundles": [
+    "kitchen-sink"
+  ],
+  "features": {
+    "networking": true
+  },
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginZipFile": {
+        "resource": "wordpress.org/plugins",
+        "slug": "fullworks-active-users-monitor"
+      }
+    },
+    {
+      "step": "activatePlugin",
+      "plugin": "fullworks-active-users-monitor"
+    },
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "Active Users Monitor Demo",
+        "blogdescription": "Testing the Fullworks Active Users Monitor plugin"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\n// Create some test users with different roles\n$test_users = [\n    ['user_login' => 'editor_user', 'user_pass' => 'password', 'user_email' => 'editor@example.com', 'role' => 'editor', 'display_name' => 'Editor User'],\n    ['user_login' => 'author_user', 'user_pass' => 'password', 'user_email' => 'author@example.com', 'role' => 'author', 'display_name' => 'Author User'],\n    ['user_login' => 'subscriber_user', 'user_pass' => 'password', 'user_email' => 'subscriber@example.com', 'role' => 'subscriber', 'display_name' => 'Subscriber User']\n];\n\nforeach ($test_users as $user_data) {\n    if (!username_exists($user_data['user_login'])) {\n        $user_id = wp_create_user($user_data['user_login'], $user_data['user_pass'], $user_data['user_email']);\n        if (!is_wp_error($user_id)) {\n            $user = new WP_User($user_id);\n            $user->set_role($user_data['role']);\n            wp_update_user(['ID' => $user_id, 'display_name' => $user_data['display_name']]);\n        }\n    }\n}"
+    },
+    {
+      "step": "writeFile",
+      "path": "/wordpress/wp-content/mu-plugins/playground-demo.php",
+      "data": "<?php\n/**\n * Playground Demo Helper for Active Users Monitor\n */\n\n// Add a notice to explain the demo\nadd_action('admin_notices', function() {\n    if (get_current_screen()->id === 'users') {\n        echo '<div class=\"notice notice-info\"><p><strong>Welcome to the Active Users Monitor Demo!</strong><br>';\n        echo 'This is a demo environment with test users. The online status indicators show who is currently logged in.<br>';\n        echo 'Try opening different browser tabs/windows and logging in as different users to see the real-time tracking!</p></div>';\n    }\n});\n\n// Simulate some online activity for demo purposes\nadd_action('init', function() {\n    // This would normally happen automatically when users log in\n    // For demo, we'll just ensure the admin user appears as online\n    if (is_user_logged_in() && current_user_can('manage_options')) {\n        // The plugin will track this automatically\n    }\n});"
+    }
+  ]
+}
