@@ -1,10 +1,10 @@
 === Fullworks Active Users Monitor ===
-Contributors: alanef, fullworks
-Donate link: https://fullworks.net/
+Contributors: fullworks
+Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 5.9
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -130,6 +130,12 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 6. Filter dropdown for showing online/offline users only
 
 == Changelog ==
+
+= 1.0.1 =
+* Fixed contributor name and donation link
+* Added WordPress Playground blueprint for easy preview
+* Added plugin assets to readme
+* Minor documentation improvements
 
 = 1.0.0 =
 * Initial release
