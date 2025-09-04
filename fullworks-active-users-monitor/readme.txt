@@ -122,12 +122,10 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 
 == Screenshots ==
 
-1. Admin bar showing online users counter with role breakdown dropdown
-2. Users list page with visual status indicators and online badges
-3. Settings page for configuring plugin options
-4. Dashboard widget displaying online users summary
-5. WP-CLI commands for monitoring active users
-6. Filter dropdown for showing online/offline users only
+1. Users list page showing highlighted online users with visual indicators
+2. Settings page giving control over who sees online status
+3. Dashboard widget displaying online users summary
+4. Admin bar dropdown showing online users count and role breakdown
 
 == Changelog ==
 
