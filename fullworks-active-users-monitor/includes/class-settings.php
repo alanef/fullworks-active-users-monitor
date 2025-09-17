@@ -242,7 +242,10 @@ class Settings {
 
 			<?php settings_errors( 'fwaum_messages' ); ?>
 
-			<?php do_action( 'ffpl_ad_display' ); ?>
+			<?php
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Hook from free_plugin_lib external library.
+			do_action( 'ffpl_ad_display' );
+			?>
 
 			<form method="post" action="options.php">
 				<?php
