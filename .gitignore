@@ -1,6 +1,7 @@
 # Dependencies
 /vendor/
 /node_modules/
+/fullworks-active-users-monitor/includes/vendor/
 
 # Build files
 /dist/

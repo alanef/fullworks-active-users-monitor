@@ -1,0 +1,30 @@
+{
+  "name": "fullworks/active-users-monitor",
+  "description": "Real-time monitoring of logged-in WordPress users with visual indicators and admin tools",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Fullworks",
+      "email": "support@fullworks.net",
+      "homepage": "https://fullworks.net"
+    }
+  ],
+  "minimum-stability": "stable",
+  "config": {
+    "vendor-dir": "includes/vendor",
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  },
+  "autoload": {
+    "classmap": [
+      "."
+    ]
+  },
+  "require": {
+    "php": ">=7.4",
+    "alanef/free_plugin_lib": "^v1.0.0",
+    "composer/installers": "v1.0.12"
+  }
+}
