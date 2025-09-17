@@ -1,0 +1,356 @@
+/**
+ * Audit Trail Admin Styles
+ *
+ * @package FullworksActiveUsersMonitor
+ */
+
+/* Statistics Dashboard */
+.fwaum-audit-stats {
+	margin: 20px 0;
+}
+
+.fwaum-stat-cards {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+}
+
+.fwaum-stat-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	flex: 1;
+	min-width: 250px;
+	box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+
+.fwaum-stat-card h3 {
+	margin: 0 0 15px 0;
+	font-size: 16px;
+	color: #23282d;
+}
+
+.fwaum-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 15px;
+}
+
+.fwaum-stat-item {
+	text-align: center;
+}
+
+.fwaum-stat-number {
+	display: block;
+	font-size: 24px;
+	font-weight: bold;
+	color: #0073aa;
+	line-height: 1;
+}
+
+.fwaum-stat-label {
+	display: block;
+	font-size: 12px;
+	color: #666;
+	margin-top: 5px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.fwaum-stat-big {
+	text-align: center;
+}
+
+.fwaum-stat-big .fwaum-stat-number {
+	font-size: 36px;
+	color: #00a32a;
+}
+
+.fwaum-stat-meta {
+	text-align: center;
+	color: #666;
+	font-size: 13px;
+	margin: 10px 0 0 0;
+}
+
+.fwaum-quick-actions {
+	text-align: right;
+}
+
+.fwaum-quick-actions .button {
+	margin-left: 10px;
+}
+
+/* Event Badges */
+.fwaum-event-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.fwaum-event-success {
+	background-color: #00a32a;
+	color: white;
+}
+
+.fwaum-event-info {
+	background-color: #0073aa;
+	color: white;
+}
+
+.fwaum-event-warning {
+	background-color: #dba617;
+	color: white;
+}
+
+.fwaum-event-error {
+	background-color: #d63638;
+	color: white;
+}
+
+.fwaum-event-default {
+	background-color: #666;
+	color: white;
+}
+
+/* Login Method Styling */
+.fwaum-login-method {
+	font-size: 12px;
+	color: #666;
+}
+
+.fwaum-method-migrated {
+	font-style: italic;
+}
+
+/* Empty States */
+.fwaum-no-ip,
+.fwaum-no-duration,
+.fwaum-no-agent {
+	color: #999;
+	font-style: italic;
+}
+
+/* IP Address */
+.fwaum-ip-address {
+	font-family: monospace;
+	font-size: 13px;
+}
+
+/* User Agent */
+.fwaum-user-agent {
+	cursor: help;
+	font-size: 12px;
+	color: #666;
+}
+
+/* Modal Styles */
+.fwaum-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.fwaum-modal-content {
+	background-color: white;
+	padding: 0;
+	border-radius: 4px;
+	max-width: 800px;
+	width: 90%;
+	max-height: 90%;
+	overflow-y: auto;
+	position: relative;
+	box-shadow: 0 3px 30px rgba(0, 0, 0, 0.2);
+}
+
+.fwaum-modal-content h2 {
+	margin: 0;
+	padding: 20px 20px 15px;
+	border-bottom: 1px solid #ddd;
+	background-color: #f9f9f9;
+}
+
+.fwaum-modal-close {
+	position: absolute;
+	top: 10px;
+	right: 15px;
+	font-size: 24px;
+	font-weight: bold;
+	cursor: pointer;
+	color: #666;
+	z-index: 1;
+}
+
+.fwaum-modal-close:hover {
+	color: #000;
+}
+
+#fwaum-audit-details-content {
+	padding: 20px;
+}
+
+/* Details Table */
+.fwaum-details-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 10px;
+}
+
+.fwaum-details-table th,
+.fwaum-details-table td {
+	padding: 10px;
+	text-align: left;
+	border-bottom: 1px solid #eee;
+	vertical-align: top;
+}
+
+.fwaum-details-table th {
+	background-color: #f9f9f9;
+	font-weight: 600;
+	width: 150px;
+	color: #23282d;
+}
+
+.fwaum-details-table td {
+	word-break: break-word;
+}
+
+/* Export Form */
+.fwaum-export-stats {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	padding: 20px;
+	margin: 20px 0;
+	border-radius: 4px;
+}
+
+.fwaum-export-stats h2 {
+	margin-top: 0;
+}
+
+.fwaum-export-form {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	padding: 20px;
+	margin: 20px 0;
+	border-radius: 4px;
+}
+
+.fwaum-export-form h2 {
+	margin-top: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.fwaum-stat-cards {
+		flex-direction: column;
+	}
+
+	.fwaum-stat-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.fwaum-quick-actions {
+		text-align: left;
+		margin-top: 15px;
+	}
+
+	.fwaum-quick-actions .button {
+		display: block;
+		margin: 5px 0;
+		text-align: center;
+	}
+
+	.fwaum-modal-content {
+		margin: 20px;
+		width: calc(100% - 40px);
+	}
+}
+
+/* Loading States */
+.fwaum-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.fwaum-loading::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	margin: -10px 0 0 -10px;
+	border: 2px solid #f3f3f3;
+	border-top: 2px solid #0073aa;
+	border-radius: 50%;
+	animation: fwaum-spin 1s linear infinite;
+}
+
+@keyframes fwaum-spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/* Admin Notice Enhancements */
+.fwaum-settings .notice {
+	border-radius: 4px;
+}
+
+/* Table Enhancements */
+.wp-list-table .fwaum-view-details {
+	color: #0073aa;
+	text-decoration: none;
+}
+
+.wp-list-table .fwaum-view-details:hover {
+	color: #005a87;
+}
+
+/* Search Box Styling */
+.tablenav .search-box {
+	margin: 0;
+}
+
+/* Date Filter Styling */
+.tablenav .alignleft input[type="date"] {
+	margin-right: 5px;
+}
+
+/* Status Messages */
+.fwaum-status-message {
+	padding: 10px 15px;
+	border-radius: 4px;
+	margin: 15px 0;
+}
+
+.fwaum-status-success {
+	background-color: #d4edda;
+	border-color: #c3e6cb;
+	color: #155724;
+}
+
+.fwaum-status-error {
+	background-color: #f8d7da;
+	border-color: #f5c6cb;
+	color: #721c24;
+}
+
+.fwaum-status-warning {
+	background-color: #fff3cd;
+	border-color: #ffeeba;
+	color: #856404;
+}
