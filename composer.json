@@ -24,6 +24,7 @@
         "yoast/phpunit-polyfills": "^2.0"
     },
     "config": {
+        "vendor-dir": "vendor",
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         },
@@ -34,6 +35,10 @@
         "preferred-install": "dist"
     },
     "scripts": {
+        "post-update-cmd": [
+            "composer update -d fullworks-active-users-monitor",
+            "wp i18n make-pot ./fullworks-active-users-monitor ./fullworks-active-users-monitor/languages/fullworks-active-users-monitor.pot --skip-audit --exclude='vendor,node_modules,tests,bin'"
+        ],
         "lint": "./vendor/bin/phpcs",
         "lint:fix": "./vendor/bin/phpcbf",
         "phpcs-security": "./vendor/bin/phpcs -p --standard=phpcs_sec.xml",
@@ -41,8 +46,11 @@
         "test": "./vendor/bin/phpunit",
         "test:unit": "./vendor/bin/phpunit --testsuite unit",
         "test:integration": "./vendor/bin/phpunit --testsuite integration",
-        "make-pot": "mkdir -p fullworks-active-users-monitor/languages && wp i18n make-pot ./fullworks-active-users-monitor ./fullworks-active-users-monitor/languages/fullworks-active-users-monitor.pot --skip-audit --exclude='vendor,node_modules,tests,bin'",
-        "build": "composer run-script make-pot && rm -rf dist && mkdir -p dist && wp dist-archive ./fullworks-active-users-monitor ./dist/fullworks-active-users-monitor.zip --plugin-dirname=fullworks-active-users-monitor"
+        "build": [
+            "cd fullworks-active-users-monitor && composer install --no-dev",
+            "mkdir -p dist",
+            "wp dist-archive fullworks-active-users-monitor dist/fullworks-active-users-monitor.zip --plugin-dirname=fullworks-active-users-monitor"
+        ]
     },
     "scripts-descriptions": {
         "lint": "Run PHP_CodeSniffer to detect coding standard violations",

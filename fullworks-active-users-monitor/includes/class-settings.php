@@ -24,6 +24,23 @@ class Settings {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'init', array( $this, 'init_free_plugin_lib' ) );
+	}
+
+	/**
+	 * Initialize the free plugin library
+	 */
+	public function init_free_plugin_lib() {
+		// Initialize free plugin library.
+		if ( class_exists( '\\Fullworks_Free_Plugin_Lib\\Main' ) ) {
+			new \Fullworks_Free_Plugin_Lib\Main(
+				'fullworks-active-users-monitor/fullworks-active-users-monitor.php',
+				admin_url( 'options-general.php?page=fwaum-settings' ),
+				'FWAUM-Free',
+				'settings_page_fwaum-settings',
+				__( 'Active Users Monitor Settings', 'fullworks-active-users-monitor' )
+			);
+		}
 	}
 
 	/**
@@ -307,6 +324,11 @@ class Settings {
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
 			<?php settings_errors( 'fwaum_messages' ); ?>
+
+			<?php
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Hook from free_plugin_lib external library.
+			do_action( 'ffpl_ad_display' );
+			?>
 
 			<form method="post" action="options.php">
 				<?php

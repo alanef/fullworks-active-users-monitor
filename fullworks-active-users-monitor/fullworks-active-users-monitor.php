@@ -31,8 +31,8 @@ define( 'FWAUM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'FWAUM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 // Require Composer autoloader if it exists.
-if ( file_exists( FWAUM_PLUGIN_PATH . 'vendor/autoload.php' ) ) {
-	require_once FWAUM_PLUGIN_PATH . 'vendor/autoload.php';
+if ( file_exists( FWAUM_PLUGIN_PATH . 'includes/vendor/autoload.php' ) ) {
+	require_once FWAUM_PLUGIN_PATH . 'includes/vendor/autoload.php';
 }
 
 // Manually include required files if autoloader not available.
