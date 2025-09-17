@@ -13,7 +13,8 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "alanef/free_plugin_lib": "^v1.0.0"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.7",
@@ -24,6 +25,7 @@
         "yoast/phpunit-polyfills": "^2.0"
     },
     "config": {
+        "vendor-dir": "fullworks-active-users-monitor/includes/vendor",
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         },
