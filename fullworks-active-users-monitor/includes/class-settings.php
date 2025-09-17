@@ -24,7 +24,13 @@ class Settings {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'init', array( $this, 'init_free_plugin_lib' ) );
+	}
 
+	/**
+	 * Initialize the free plugin library
+	 */
+	public function init_free_plugin_lib() {
 		// Initialize free plugin library.
 		if ( class_exists( '\\Fullworks_Free_Plugin_Lib\\Main' ) ) {
 			new \Fullworks_Free_Plugin_Lib\Main(
@@ -236,6 +242,8 @@ class Settings {
 
 			<?php settings_errors( 'fwaum_messages' ); ?>
 
+			<?php do_action( 'ffpl_ad_display' ); ?>
+
 			<form method="post" action="options.php">
 				<?php
 				settings_fields( 'fwaum_settings_group' );
@@ -245,7 +253,6 @@ class Settings {
 			</form>
 
 			<div class="fwaum-settings-info">
-				<?php do_action( 'ffpl_ad_display' ); ?>
 				<h2><?php esc_html_e( 'About Active Users Monitor', 'fullworks-active-users-monitor' ); ?></h2>
 				<p><?php esc_html_e( 'This plugin provides real-time visibility of logged-in users using WordPress\'s native session tokens system.', 'fullworks-active-users-monitor' ); ?></p>
 				<p><?php esc_html_e( 'Features include:', 'fullworks-active-users-monitor' ); ?></p>
