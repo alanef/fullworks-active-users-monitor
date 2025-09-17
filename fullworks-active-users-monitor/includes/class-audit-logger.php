@@ -261,6 +261,7 @@ class Audit_Logger {
 		}
 
 		// Check for common social login plugins.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing -- Just detecting login method.
 		if ( isset( $_GET['loginSocial'] ) || isset( $_POST['loginSocial'] ) ) {
 			return 'social';
 		}
@@ -348,16 +349,22 @@ class Audit_Logger {
 		$offset   = ( $page - 1 ) * $per_page;
 
 		// Get total count.
-		$count_query = "SELECT COUNT(*) FROM $table_name WHERE $where_clause";
+		$count_query = "SELECT COUNT(*) FROM %i WHERE $where_clause";
 		if ( ! empty( $where_values ) ) {
-			$count_query = $wpdb->prepare( $count_query, $where_values );
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared in the next line.
+			$count_query = $wpdb->prepare( $count_query, array_merge( array( $table_name ), $where_values ) );
+		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared in the next line.
+			$count_query = $wpdb->prepare( $count_query, $table_name );
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query was prepared above.
 		$total_items = intval( $wpdb->get_var( $count_query ) );
 
 		// Get entries.
-		$query        = "SELECT * FROM $table_name WHERE $where_clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
-		$query_values = array_merge( $where_values, array( $per_page, $offset ) );
-		$results      = $wpdb->get_results( $wpdb->prepare( $query, $query_values ) );
+		$query        = "SELECT * FROM %i WHERE $where_clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
+		$query_values = array_merge( array( $table_name ), $where_values, array( $per_page, $offset ) );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared with all values.
+		$results = $wpdb->get_results( $wpdb->prepare( $query, $query_values ) );
 
 		return array(
 			'entries'     => $results,
@@ -379,20 +386,20 @@ class Audit_Logger {
 		// Define date ranges.
 		$date_ranges = array(
 			'today' => array(
-				'start' => date( 'Y-m-d 00:00:00' ),
-				'end'   => date( 'Y-m-d 23:59:59' ),
+				'start' => current_time( 'Y-m-d 00:00:00' ),
+				'end'   => current_time( 'Y-m-d 23:59:59' ),
 			),
 			'week'  => array(
-				'start' => date( 'Y-m-d 00:00:00', strtotime( '-7 days' ) ),
-				'end'   => date( 'Y-m-d 23:59:59' ),
+				'start' => gmdate( 'Y-m-d 00:00:00', strtotime( '-7 days' ) ),
+				'end'   => current_time( 'Y-m-d 23:59:59' ),
 			),
 			'month' => array(
-				'start' => date( 'Y-m-d 00:00:00', strtotime( '-30 days' ) ),
-				'end'   => date( 'Y-m-d 23:59:59' ),
+				'start' => gmdate( 'Y-m-d 00:00:00', strtotime( '-30 days' ) ),
+				'end'   => current_time( 'Y-m-d 23:59:59' ),
 			),
 			'year'  => array(
-				'start' => date( 'Y-m-d 00:00:00', strtotime( '-365 days' ) ),
-				'end'   => date( 'Y-m-d 23:59:59' ),
+				'start' => gmdate( 'Y-m-d 00:00:00', strtotime( '-365 days' ) ),
+				'end'   => current_time( 'Y-m-d 23:59:59' ),
 			),
 		);
 
@@ -406,10 +413,11 @@ class Audit_Logger {
 		// Get event counts by type.
 		$event_counts = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT event_type, COUNT(*) as count
-				FROM $table_name
+				'SELECT event_type, COUNT(*) as count
+				FROM %i
 				WHERE timestamp BETWEEN %s AND %s
-				GROUP BY event_type",
+				GROUP BY event_type',
+				$table_name,
 				$start_date,
 				$end_date
 			)
@@ -431,10 +439,11 @@ class Audit_Logger {
 		// Get unique users count.
 		$unique_users = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(DISTINCT user_id)
-				FROM $table_name
+				'SELECT COUNT(DISTINCT user_id)
+				FROM %i
 				WHERE timestamp BETWEEN %s AND %s
-				AND user_id > 0",
+				AND user_id > 0',
+				$table_name,
 				$start_date,
 				$end_date
 			)
@@ -467,6 +476,7 @@ class Audit_Logger {
 		$args['per_page'] = 10000; // Large number for export.
 		$results          = self::get_audit_entries( $args );
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- php://temp is a memory stream, not filesystem.
 		$output = fopen( 'php://temp', 'r+' );
 
 		// Write CSV header.
@@ -509,6 +519,7 @@ class Audit_Logger {
 
 		rewind( $output );
 		$csv_content = stream_get_contents( $output );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing memory stream, not filesystem.
 		fclose( $output );
 
 		return $csv_content;

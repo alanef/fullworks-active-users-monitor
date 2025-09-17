@@ -2,7 +2,7 @@
 Contributors: fullworks,alanfuller
 Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
-Requires at least: 5.9
+Requires at least: 6.2
 Tested up to: 6.8
 Stable tag: 1.0.1
 Requires PHP: 7.4

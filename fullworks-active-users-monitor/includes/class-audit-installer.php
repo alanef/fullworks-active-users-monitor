@@ -126,7 +126,7 @@ class Audit_Installer {
 				continue;
 			}
 
-			$timestamp = date( 'Y-m-d H:i:s', intval( $result->last_login ) );
+			$timestamp = gmdate( 'Y-m-d H:i:s', intval( $result->last_login ) );
 
 			// Insert as a login event.
 			$wpdb->insert(
@@ -162,11 +162,12 @@ class Audit_Installer {
 
 		global $wpdb;
 		$table_name  = self::get_table_name();
-		$cutoff_date = date( 'Y-m-d H:i:s', strtotime( "-{$retention_days} days" ) );
+		$cutoff_date = gmdate( 'Y-m-d H:i:s', strtotime( "-{$retention_days} days" ) );
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM $table_name WHERE timestamp < %s",
+				'DELETE FROM %i WHERE timestamp < %s',
+				$table_name,
 				$cutoff_date
 			)
 		);
@@ -179,6 +180,7 @@ class Audit_Installer {
 		global $wpdb;
 		$table_name = self::get_table_name();
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange -- DROP TABLE requires direct query.
 		$wpdb->query( "DROP TABLE IF EXISTS $table_name" );
 		delete_option( self::DB_VERSION_OPTION );
 		delete_option( 'fwaum_audit_migration_done' );
@@ -193,9 +195,9 @@ class Audit_Installer {
 		global $wpdb;
 		$table_name = self::get_table_name();
 
-		$total_entries = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-		$oldest_entry  = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp ASC LIMIT 1" );
-		$newest_entry  = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp DESC LIMIT 1" );
+		$total_entries = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table_name ) );
+		$oldest_entry  = $wpdb->get_var( $wpdb->prepare( 'SELECT timestamp FROM %i ORDER BY timestamp ASC LIMIT 1', $table_name ) );
+		$newest_entry  = $wpdb->get_var( $wpdb->prepare( 'SELECT timestamp FROM %i ORDER BY timestamp DESC LIMIT 1', $table_name ) );
 
 		return array(
 			'total_entries' => intval( $total_entries ),

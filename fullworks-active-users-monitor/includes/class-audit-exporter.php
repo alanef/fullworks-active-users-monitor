@@ -93,6 +93,7 @@ class Audit_Exporter {
 		header( 'Expires: 0' );
 
 		// Open output stream.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- php://output is for direct browser output, not filesystem.
 		$output = fopen( 'php://output', 'w' );
 
 		// Write BOM for proper Excel UTF-8 handling.
@@ -136,6 +137,7 @@ class Audit_Exporter {
 			);
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing php://output stream, not filesystem.
 		fclose( $output );
 		exit;
 	}
@@ -295,7 +297,7 @@ class Audit_Exporter {
 	 */
 	private function generate_filename( $format, $args ) {
 		$site_name = sanitize_title( get_bloginfo( 'name' ) );
-		$timestamp = date( 'Y-m-d-H-i-s' );
+		$timestamp = gmdate( 'Y-m-d-H-i-s' );
 
 		$filename_parts = array( 'audit-log', $site_name, $timestamp );
 
@@ -392,7 +394,7 @@ class Audit_Exporter {
 		);
 
 		// Get basic stats.
-		$total                  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+		$total                  = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table_name ) );
 		$stats['total_entries'] = intval( $total );
 
 		if ( $stats['total_entries'] > 0 ) {
@@ -403,7 +405,7 @@ class Audit_Exporter {
 
 			// Get date range.
 			$date_range = $wpdb->get_row(
-				"SELECT MIN(timestamp) as oldest, MAX(timestamp) as newest FROM $table_name"
+				$wpdb->prepare( 'SELECT MIN(timestamp) as oldest, MAX(timestamp) as newest FROM %i', $table_name )
 			);
 
 			if ( $date_range ) {

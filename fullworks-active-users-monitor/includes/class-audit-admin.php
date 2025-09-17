@@ -31,22 +31,19 @@ class Audit_Admin {
 	 * Add admin menu pages
 	 */
 	public function add_admin_pages() {
-		// Add main audit log page.
-		add_menu_page(
+		// Add audit log as submenu under Users.
+		add_users_page(
 			esc_html__( 'Audit Log', 'fullworks-active-users-monitor' ),
 			esc_html__( 'Audit Log', 'fullworks-active-users-monitor' ),
 			'manage_options',
 			'fwaum-audit-log',
-			array( $this, 'render_audit_log_page' ),
-			'dashicons-list-view',
-			26
+			array( $this, 'render_audit_log_page' )
 		);
 
-		// Add submenu for export.
-		add_submenu_page(
-			'fwaum-audit-log',
+		// Add export as submenu under Users.
+		add_users_page(
 			esc_html__( 'Export Audit Log', 'fullworks-active-users-monitor' ),
-			esc_html__( 'Export', 'fullworks-active-users-monitor' ),
+			esc_html__( 'Export Audit Log', 'fullworks-active-users-monitor' ),
 			'manage_options',
 			'fwaum-audit-export',
 			array( $this, 'render_export_page' )
@@ -59,7 +56,7 @@ class Audit_Admin {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_admin_assets( $hook ) {
-		if ( ! in_array( $hook, array( 'toplevel_page_fwaum-audit-log', 'audit-log_page_fwaum-audit-export' ), true ) ) {
+		if ( ! in_array( $hook, array( 'users_page_fwaum-audit-log', 'users_page_fwaum-audit-export' ), true ) ) {
 			return;
 		}
 
@@ -177,7 +174,7 @@ class Audit_Admin {
 				</div>
 
 				<div class="fwaum-quick-actions">
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=fwaum-audit-export' ) ); ?>" class="button button-secondary">
+					<a href="<?php echo esc_url( admin_url( 'users.php?page=fwaum-audit-export' ) ); ?>" class="button button-secondary">
 						<?php esc_html_e( 'Export Audit Log', 'fullworks-active-users-monitor' ); ?>
 					</a>
 					<a href="<?php echo esc_url( admin_url( 'options-general.php?page=fwaum-settings#fwaum_audit_section' ) ); ?>" class="button button-secondary">
@@ -188,6 +185,7 @@ class Audit_Admin {
 
 			<!-- Audit Log Table -->
 			<form method="get">
+				<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just preserving the admin page parameter. ?>
 				<input type="hidden" name="page" value="<?php echo esc_attr( $_REQUEST['page'] ); ?>" />
 				<?php
 				$audit_table->search_box( esc_html__( 'Search audit entries', 'fullworks-active-users-monitor' ), 'search' );
@@ -341,7 +339,8 @@ class Audit_Admin {
 
 		$entry = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE id = %d",
+				'SELECT * FROM %i WHERE id = %d',
+				$table_name,
 				$entry_id
 			)
 		);
@@ -434,16 +433,20 @@ class Audit_Admin {
 					<?php
 					$duration = intval( $entry->session_duration );
 					if ( $duration < 60 ) {
+						/* translators: %d: number of seconds */
 						echo esc_html( sprintf( _n( '%d second', '%d seconds', $duration, 'fullworks-active-users-monitor' ), $duration ) );
 					} elseif ( $duration < 3600 ) {
 						$minutes = round( $duration / 60 );
+						/* translators: %d: number of minutes */
 						echo esc_html( sprintf( _n( '%d minute', '%d minutes', $minutes, 'fullworks-active-users-monitor' ), $minutes ) );
 					} else {
 						$hours   = floor( $duration / 3600 );
 						$minutes = round( ( $duration % 3600 ) / 60 );
 						if ( $minutes > 0 ) {
+							/* translators: 1: number of hours, 2: number of minutes */
 							echo esc_html( sprintf( __( '%1$d hours %2$d minutes', 'fullworks-active-users-monitor' ), $hours, $minutes ) );
 						} else {
+							/* translators: %d: number of hours */
 							echo esc_html( sprintf( _n( '%d hour', '%d hours', $hours, 'fullworks-active-users-monitor' ), $hours ) );
 						}
 					}

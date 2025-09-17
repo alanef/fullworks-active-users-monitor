@@ -244,15 +244,19 @@ class Audit_Table extends \WP_List_Table {
 
 		$duration = intval( $item->session_duration );
 		if ( $duration < 60 ) {
+			/* translators: %d: Duration in seconds */
 			return sprintf( esc_html__( '%ds', 'fullworks-active-users-monitor' ), $duration );
 		} elseif ( $duration < 3600 ) {
+			/* translators: %d: Duration in minutes */
 			return sprintf( esc_html__( '%dm', 'fullworks-active-users-monitor' ), round( $duration / 60 ) );
 		} else {
 			$hours   = floor( $duration / 3600 );
 			$minutes = round( ( $duration % 3600 ) / 60 );
 			if ( $minutes > 0 ) {
+				/* translators: 1: Hours, 2: Minutes */
 				return sprintf( esc_html__( '%1$dh %2$dm', 'fullworks-active-users-monitor' ), $hours, $minutes );
 			} else {
+				/* translators: %d: Duration in hours */
 				return sprintf( esc_html__( '%dh', 'fullworks-active-users-monitor' ), $hours );
 			}
 		}
@@ -299,15 +303,22 @@ class Audit_Table extends \WP_List_Table {
 		$current_page = $this->get_pagenum();
 
 		// Get filter values.
-		$user_id    = isset( $_GET['user_id'] ) ? intval( $_GET['user_id'] ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
+		$user_id = isset( $_GET['user_id'] ) ? intval( $_GET['user_id'] ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
 		$event_type = isset( $_GET['event_type'] ) ? sanitize_text_field( wp_unslash( $_GET['event_type'] ) ) : null;
-		$date_from  = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : null;
-		$date_to    = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : null;
-		$search     = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
+		$date_from = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
+		$date_to = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : null;
 
 		// Get sorting parameters.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
 		$orderby = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) : 'timestamp';
-		$order   = isset( $_GET['order'] ) ? sanitize_text_field( wp_unslash( $_GET['order'] ) ) : 'desc';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- These are display filters only, not data modifications.
+		$order = isset( $_GET['order'] ) ? sanitize_text_field( wp_unslash( $_GET['order'] ) ) : 'desc';
 
 		// Prepare query arguments.
 		$args = array(
@@ -353,7 +364,8 @@ class Audit_Table extends \WP_List_Table {
 	 * @return array Views array.
 	 */
 	protected function get_views() {
-		$views        = array();
+		$views = array();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display filter only.
 		$current_view = isset( $_GET['event_type'] ) ? sanitize_text_field( wp_unslash( $_GET['event_type'] ) ) : '';
 
 		// All entries.
@@ -403,7 +415,12 @@ class Audit_Table extends \WP_List_Table {
 			<input type="date"
 					id="filter-date-from"
 					name="date_from"
-					value="<?php echo esc_attr( isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : '' ); ?>"
+					value="
+					<?php
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display filter only.
+					echo esc_attr( isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : '' );
+					?>
+				"
 					placeholder="<?php esc_attr_e( 'From date', 'fullworks-active-users-monitor' ); ?>" />
 
 			<label for="filter-date-to" class="screen-reader-text">
@@ -412,7 +429,12 @@ class Audit_Table extends \WP_List_Table {
 			<input type="date"
 					id="filter-date-to"
 					name="date_to"
-					value="<?php echo esc_attr( isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : '' ); ?>"
+					value="
+					<?php
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display filter only.
+					echo esc_attr( isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : '' );
+					?>
+				"
 					placeholder="<?php esc_attr_e( 'To date', 'fullworks-active-users-monitor' ); ?>" />
 
 			<?php submit_button( esc_html__( 'Filter', 'fullworks-active-users-monitor' ), 'secondary', 'filter_action', false ); ?>
@@ -446,8 +468,9 @@ class Audit_Table extends \WP_List_Table {
 
 				$wpdb->query(
 					$wpdb->prepare(
-						"DELETE FROM $table_name WHERE id IN ($placeholders)",
-						$entries
+						// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Placeholders are dynamically generated but safe.
+						'DELETE FROM %i WHERE id IN (' . $placeholders . ')',
+						array_merge( array( $table_name ), $entries )
 					)
 				);
 

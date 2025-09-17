@@ -4,7 +4,7 @@
  * Plugin URI:        https://fullworks.net/products/active-users-monitor/
  * Description:       Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities.
  * Version:           1.0.2
- * Requires at least: 5.9
+ * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Fullworks
  * Author URI:        https://fullworks.net/
