@@ -3,8 +3,8 @@
  * Plugin Name:       Fullworks Active Users Monitor
  * Plugin URI:        https://fullworks.net/products/active-users-monitor/
  * Description:       Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities.
- * Version:           1.0.1
- * Requires at least: 5.9
+ * Version:           1.1.0
+ * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Fullworks
  * Author URI:        https://fullworks.net/
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants with unique prefix (minimum 4 characters).
-define( 'FWAUM_VERSION', '1.0.1' );
+define( 'FWAUM_VERSION', '1.1.0' );
 define( 'FWAUM_PLUGIN_FILE', __FILE__ );
 define( 'FWAUM_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FWAUM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -43,6 +43,13 @@ require_once FWAUM_PLUGIN_PATH . 'includes/class-ajax-handler.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-settings.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-dashboard-widget.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-cli-command.php';
+
+// Audit trail classes.
+require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-installer.php';
+require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-logger.php';
+require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-table.php';
+require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-exporter.php';
+require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-admin.php';
 
 /**
  * Main plugin class
@@ -101,6 +108,27 @@ class Plugin {
 	private $dashboard_widget;
 
 	/**
+	 * Audit logger instance
+	 *
+	 * @var Includes\Audit_Logger
+	 */
+	private $audit_logger;
+
+	/**
+	 * Audit exporter instance
+	 *
+	 * @var Includes\Audit_Exporter
+	 */
+	private $audit_exporter;
+
+	/**
+	 * Audit admin instance
+	 *
+	 * @var Includes\Audit_Admin
+	 */
+	private $audit_admin;
+
+	/**
 	 * Get singleton instance
 	 *
 	 * @return Plugin
@@ -131,6 +159,11 @@ class Plugin {
 		$this->settings         = new Includes\Settings();
 		$this->dashboard_widget = new Includes\Dashboard_Widget( $this->user_tracker );
 
+		// Initialize audit trail components.
+		$this->audit_logger   = new Includes\Audit_Logger();
+		$this->audit_exporter = new Includes\Audit_Exporter();
+		$this->audit_admin    = new Includes\Audit_Admin();
+
 		// Register hooks.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_admin_bar_assets' ) );
@@ -140,8 +173,20 @@ class Plugin {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'active-users', __NAMESPACE__ . '\\Includes\\CLI_Command' );
 		}
+
+		// Check if audit trail database needs update.
+		add_action( 'admin_init', array( $this, 'maybe_update_audit_database' ) );
 	}
 
+
+	/**
+	 * Maybe update audit trail database
+	 */
+	public function maybe_update_audit_database() {
+		if ( Includes\Audit_Installer::needs_update() ) {
+			Includes\Audit_Installer::install();
+		}
+	}
 
 	/**
 	 * Enqueue admin assets
@@ -149,8 +194,16 @@ class Plugin {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_admin_assets( $hook ) {
-		// Load on users page and settings page.
-		if ( 'users.php' !== $hook && 'settings_page_fwaum-settings' !== $hook && 'index.php' !== $hook ) {
+		// Load on users page, settings page, dashboard, and audit pages.
+		$allowed_hooks = array(
+			'users.php',
+			'settings_page_fwaum-settings',
+			'index.php',
+			'toplevel_page_fwaum-audit-log',
+			'audit-log_page_fwaum-audit-export',
+		);
+
+		if ( ! in_array( $hook, $allowed_hooks, true ) ) {
 			return;
 		}
 
@@ -233,16 +286,23 @@ register_activation_hook(
 	function () {
 		// Set default options.
 		$default_options = array(
-			'enable_admin_bar'  => true,
-			'refresh_interval'  => 30,
-			'enable_dashboard'  => true,
-			'show_last_seen'    => true,
-			'enable_animations' => true,
+			'enable_admin_bar'          => true,
+			'refresh_interval'          => 30,
+			'enable_dashboard'          => true,
+			'show_last_seen'            => true,
+			'enable_animations'         => true,
+			'enable_audit_log'          => false,
+			'audit_retention_days'      => 90,
+			'audit_track_failed_logins' => true,
+			'audit_anonymize_ips_days'  => 30,
 		);
 
 		if ( false === get_option( 'fwaum_settings' ) ) {
 			add_option( 'fwaum_settings', $default_options );
 		}
+
+		// Install audit trail database table.
+		Includes\Audit_Installer::install();
 
 		// Clear any transients.
 		delete_transient( 'fwaum_online_users_cache' );

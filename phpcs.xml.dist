@@ -59,7 +59,7 @@
     </rule>
 
     <!-- Minimum supported WordPress version -->
-    <config name="minimum_wp_version" value="5.8"/>
+    <config name="minimum_wp_version" value="6.2"/>
 
     <!-- Allow some flexibility for modern PHP -->
     <rule ref="Universal.Operators.DisallowShortTernary">

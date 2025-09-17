@@ -2,9 +2,9 @@
 Contributors: fullworks,alanfuller
 Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
-Requires at least: 5.9
+Requires at least: 6.2
 Tested up to: 6.8
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,9 +18,11 @@ Real-time monitoring of logged-in WordPress users with visual indicators, filter
 = Key Features =
 
 * **Real-Time Tracking** - Uses WordPress session tokens for accurate online/offline status
+* **Comprehensive Audit Trail** - Track all login/logout events with detailed logging
 * **Admin Bar Widget** - Quick overview of online users with role breakdown
 * **Enhanced Users List** - Visual indicators, status columns, and filtering options
 * **Dashboard Widget** - At-a-glance view of active users on your dashboard
+* **Audit Log Export** - Export user activity to CSV, JSON, or Excel formats
 * **Auto-Refresh** - Configurable automatic updates without page reload
 * **Role-Based Display** - Color-coded indicators for different user roles
 * **WP-CLI Support** - Command line tools for monitoring and management
@@ -86,7 +88,7 @@ The plugin uses WordPress's built-in WP_Session_Tokens class to check for active
 
 = Does this plugin create custom database tables? =
 
-No. The plugin uses WordPress's existing session management system and stores settings using the standard Options API. No custom tables are created.
+Yes, but only if you enable the audit trail feature. The plugin creates one table (wp_fwaum_audit_log) to store login/logout event history. The core monitoring functionality uses WordPress's existing session management system without any custom tables.
 
 = Can I customize which roles can see online status? =
 
@@ -129,6 +131,18 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 
 == Changelog ==
 
+= 1.1.0 =
+* Added comprehensive audit trail functionality to track user login/logout events
+* New audit log table under Users menu with advanced filtering and search
+* Export audit logs to CSV, JSON, or Excel formats
+* Track login methods (standard, social, two-factor, API, etc.)
+* Monitor session durations and failed login attempts
+* Configurable retention periods and privacy settings
+* Database migration support for existing user data
+* Updated minimum WordPress version to 6.2 for enhanced security features
+* Fully compliant with WordPress Coding Standards
+* Integration with Fullworks Free Plugin Library for promotional features
+
 = 1.0.1 =
 * Fixed contributor name and donation link
 * Added WordPress Playground blueprint for easy preview
@@ -147,6 +161,9 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 * Full internationalization support
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Major update: Adds comprehensive audit trail functionality to track all user login/logout events with export capabilities. Requires WordPress 6.2 or higher.
 
 = 1.0.0 =
 Initial release of Fullworks Active Users Monitor. Install to start monitoring your logged-in users in real-time.

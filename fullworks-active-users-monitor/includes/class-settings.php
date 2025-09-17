@@ -172,6 +172,80 @@ class Settings {
 				'field' => 'view_roles',
 			)
 		);
+
+		// Audit Trail Settings Section.
+		add_settings_section(
+			'fwaum_audit_section',
+			esc_html__( 'Audit Trail Settings', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_audit_section' ),
+			'fwaum-settings'
+		);
+
+		// Enable audit logging.
+		add_settings_field(
+			'enable_audit_log',
+			esc_html__( 'Enable Audit Trail', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_checkbox_field' ),
+			'fwaum-settings',
+			'fwaum_audit_section',
+			array(
+				'field' => 'enable_audit_log',
+				'label' => esc_html__( 'Track and log all user login/logout activities', 'fullworks-active-users-monitor' ),
+			)
+		);
+
+		// Audit retention period.
+		add_settings_field(
+			'audit_retention_days',
+			esc_html__( 'Retention Period', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_select_field' ),
+			'fwaum-settings',
+			'fwaum_audit_section',
+			array(
+				'field'   => 'audit_retention_days',
+				'label'   => esc_html__( 'How long to keep audit log entries', 'fullworks-active-users-monitor' ),
+				'options' => array(
+					'30'  => esc_html__( '30 days', 'fullworks-active-users-monitor' ),
+					'60'  => esc_html__( '60 days', 'fullworks-active-users-monitor' ),
+					'90'  => esc_html__( '90 days', 'fullworks-active-users-monitor' ),
+					'180' => esc_html__( '6 months', 'fullworks-active-users-monitor' ),
+					'365' => esc_html__( '1 year', 'fullworks-active-users-monitor' ),
+					'0'   => esc_html__( 'Never delete (indefinite)', 'fullworks-active-users-monitor' ),
+				),
+			)
+		);
+
+		// Track failed login attempts.
+		add_settings_field(
+			'audit_track_failed_logins',
+			esc_html__( 'Track Failed Logins', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_checkbox_field' ),
+			'fwaum-settings',
+			'fwaum_audit_section',
+			array(
+				'field' => 'audit_track_failed_logins',
+				'label' => esc_html__( 'Log failed login attempts for security monitoring', 'fullworks-active-users-monitor' ),
+			)
+		);
+
+		// Anonymize IP addresses after period.
+		add_settings_field(
+			'audit_anonymize_ips_days',
+			esc_html__( 'IP Address Privacy', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_select_field' ),
+			'fwaum-settings',
+			'fwaum_audit_section',
+			array(
+				'field'   => 'audit_anonymize_ips_days',
+				'label'   => esc_html__( 'Anonymize IP addresses after specified period for privacy compliance', 'fullworks-active-users-monitor' ),
+				'options' => array(
+					'0'  => esc_html__( 'Never anonymize', 'fullworks-active-users-monitor' ),
+					'7'  => esc_html__( '7 days', 'fullworks-active-users-monitor' ),
+					'30' => esc_html__( '30 days', 'fullworks-active-users-monitor' ),
+					'90' => esc_html__( '90 days', 'fullworks-active-users-monitor' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -181,12 +255,16 @@ class Settings {
 	 */
 	private function get_default_settings() {
 		return array(
-			'enable_admin_bar'  => true,
-			'refresh_interval'  => 30,
-			'enable_dashboard'  => true,
-			'show_last_seen'    => true,
-			'enable_animations' => true,
-			'view_roles'        => array( 'administrator' ),
+			'enable_admin_bar'          => true,
+			'refresh_interval'          => 30,
+			'enable_dashboard'          => true,
+			'show_last_seen'            => true,
+			'enable_animations'         => true,
+			'view_roles'                => array( 'administrator' ),
+			'enable_audit_log'          => false,
+			'audit_retention_days'      => 90,
+			'audit_track_failed_logins' => true,
+			'audit_anonymize_ips_days'  => 30,
 		);
 	}
 
@@ -200,14 +278,19 @@ class Settings {
 		$sanitized = array();
 
 		// Checkboxes.
-		$sanitized['enable_admin_bar']  = ! empty( $input['enable_admin_bar'] );
-		$sanitized['enable_dashboard']  = ! empty( $input['enable_dashboard'] );
-		$sanitized['show_last_seen']    = ! empty( $input['show_last_seen'] );
-		$sanitized['enable_animations'] = ! empty( $input['enable_animations'] );
+		$sanitized['enable_admin_bar']          = ! empty( $input['enable_admin_bar'] );
+		$sanitized['enable_dashboard']          = ! empty( $input['enable_dashboard'] );
+		$sanitized['show_last_seen']            = ! empty( $input['show_last_seen'] );
+		$sanitized['enable_animations']         = ! empty( $input['enable_animations'] );
+		$sanitized['enable_audit_log']          = ! empty( $input['enable_audit_log'] );
+		$sanitized['audit_track_failed_logins'] = ! empty( $input['audit_track_failed_logins'] );
 
 		// Numbers.
 		$sanitized['refresh_interval'] = isset( $input['refresh_interval'] ) ? absint( $input['refresh_interval'] ) : 30;
 		$sanitized['refresh_interval'] = max( 15, min( 300, $sanitized['refresh_interval'] ) );
+
+		$sanitized['audit_retention_days']     = isset( $input['audit_retention_days'] ) ? absint( $input['audit_retention_days'] ) : 90;
+		$sanitized['audit_anonymize_ips_days'] = isset( $input['audit_anonymize_ips_days'] ) ? absint( $input['audit_anonymize_ips_days'] ) : 30;
 
 		// Roles.
 		$sanitized['view_roles'] = isset( $input['view_roles'] ) && is_array( $input['view_roles'] )
@@ -294,6 +377,33 @@ class Settings {
 	}
 
 	/**
+	 * Render audit section description
+	 */
+	public function render_audit_section() {
+		echo '<p>' . esc_html__( 'Configure audit trail settings to track user login/logout activities.', 'fullworks-active-users-monitor' ) . '</p>';
+
+		// Show audit trail status and statistics if enabled.
+		$options = get_option( 'fwaum_settings', $this->get_default_settings() );
+		if ( ! empty( $options['enable_audit_log'] ) ) {
+			if ( class_exists( '\\FullworksActiveUsersMonitor\\Includes\\Audit_Installer' ) ) {
+				$stats = Audit_Installer::get_table_stats();
+				echo '<div class="notice notice-info inline" style="margin: 10px 0;"><p>';
+				printf(
+					/* translators: 1: number of entries, 2: oldest entry date, 3: newest entry date */
+					esc_html__( 'Audit trail is active with %1$d entries from %2$s to %3$s.', 'fullworks-active-users-monitor' ),
+					esc_html( number_format_i18n( $stats['total_entries'] ) ),
+					$stats['oldest_entry'] ? esc_html( date_i18n( get_option( 'date_format' ), strtotime( $stats['oldest_entry'] ) ) ) : esc_html__( 'N/A', 'fullworks-active-users-monitor' ),
+					$stats['newest_entry'] ? esc_html( date_i18n( get_option( 'date_format' ), strtotime( $stats['newest_entry'] ) ) ) : esc_html__( 'N/A', 'fullworks-active-users-monitor' )
+				);
+				echo ' <a href="' . esc_url( admin_url( 'admin.php?page=fwaum-audit-log' ) ) . '">' . esc_html__( 'View Audit Log', 'fullworks-active-users-monitor' ) . '</a>';
+				echo '</p></div>';
+			}
+		} else {
+			echo '<div class="notice notice-warning inline" style="margin: 10px 0;"><p>' . esc_html__( 'Audit trail is currently disabled. Enable it to start tracking user activities.', 'fullworks-active-users-monitor' ) . '</p></div>';
+		}
+	}
+
+	/**
 	 * Render checkbox field
 	 *
 	 * @param array $args Field arguments.
@@ -324,14 +434,39 @@ class Settings {
 		$field   = $args['field'];
 		$value   = isset( $options[ $field ] ) ? $options[ $field ] : 30;
 		?>
-		<input type="number" 
-				id="fwaum-<?php echo esc_attr( $field ); ?>" 
-				name="fwaum_settings[<?php echo esc_attr( $field ); ?>]" 
+		<input type="number"
+				id="fwaum-<?php echo esc_attr( $field ); ?>"
+				name="fwaum_settings[<?php echo esc_attr( $field ); ?>]"
 				value="<?php echo esc_attr( $value ); ?>"
 				min="<?php echo esc_attr( $args['min'] ); ?>"
 				max="<?php echo esc_attr( $args['max'] ); ?>"
 				step="<?php echo esc_attr( $args['step'] ); ?>" />
 		<span class="description"><?php echo esc_html( $args['label'] ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Render select field
+	 *
+	 * @param array $args Field arguments.
+	 */
+	public function render_select_field( $args ) {
+		$options = get_option( 'fwaum_settings', $this->get_default_settings() );
+		$field   = $args['field'];
+		$value   = isset( $options[ $field ] ) ? $options[ $field ] : '';
+		?>
+		<select id="fwaum-<?php echo esc_attr( $field ); ?>"
+				name="fwaum_settings[<?php echo esc_attr( $field ); ?>]">
+			<?php foreach ( $args['options'] as $option_value => $option_label ) : ?>
+				<option value="<?php echo esc_attr( $option_value ); ?>"
+						<?php selected( $value, $option_value ); ?>>
+					<?php echo esc_html( $option_label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<?php if ( ! empty( $args['label'] ) ) : ?>
+			<p class="description"><?php echo esc_html( $args['label'] ); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 
