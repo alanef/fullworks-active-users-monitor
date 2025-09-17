@@ -3,7 +3,7 @@
  * Plugin Name:       Fullworks Active Users Monitor
  * Plugin URI:        https://fullworks.net/products/active-users-monitor/
  * Description:       Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities.
- * Version:           1.0.2
+ * Version:           1.1.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Fullworks
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants with unique prefix (minimum 4 characters).
-define( 'FWAUM_VERSION', '1.0.2' );
+define( 'FWAUM_VERSION', '1.1.0' );
 define( 'FWAUM_PLUGIN_FILE', __FILE__ );
 define( 'FWAUM_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FWAUM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
