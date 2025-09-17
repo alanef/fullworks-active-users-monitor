@@ -82,14 +82,14 @@ class Audit_Admin {
 			'fwaum-audit-admin',
 			'fwaumAuditAjax',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'fwaum_audit_nonce' ),
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'nonce'       => wp_create_nonce( 'fwaum_audit_nonce' ),
 				'exportNonce' => wp_create_nonce( 'fwaum_export_nonce' ),
-				'strings' => array(
+				'strings'     => array(
 					'confirmDelete' => esc_html__( 'Are you sure you want to delete the selected audit entries? This action cannot be undone.', 'fullworks-active-users-monitor' ),
-					'loading'      => esc_html__( 'Loading...', 'fullworks-active-users-monitor' ),
-					'error'        => esc_html__( 'An error occurred while processing your request.', 'fullworks-active-users-monitor' ),
-					'exportStart'  => esc_html__( 'Starting export...', 'fullworks-active-users-monitor' ),
+					'loading'       => esc_html__( 'Loading...', 'fullworks-active-users-monitor' ),
+					'error'         => esc_html__( 'An error occurred while processing your request.', 'fullworks-active-users-monitor' ),
+					'exportStart'   => esc_html__( 'Starting export...', 'fullworks-active-users-monitor' ),
 				),
 			)
 		);
@@ -129,7 +129,7 @@ class Audit_Admin {
 		$audit_table->process_bulk_action();
 
 		// Get stats for dashboard.
-		$stats = Audit_Logger::get_audit_stats( 'today' );
+		$stats       = Audit_Logger::get_audit_stats( 'today' );
 		$table_stats = Audit_Installer::get_table_stats();
 		?>
 		<div class="wrap">
@@ -386,7 +386,7 @@ class Audit_Admin {
 						'failed_login'    => esc_html__( 'Failed Login', 'fullworks-active-users-monitor' ),
 						'session_expired' => esc_html__( 'Session Expired', 'fullworks-active-users-monitor' ),
 					);
-					$event_label = isset( $event_labels[ $entry->event_type ] ) ? $event_labels[ $entry->event_type ] : $entry->event_type;
+					$event_label  = isset( $event_labels[ $entry->event_type ] ) ? $event_labels[ $entry->event_type ] : $entry->event_type;
 					echo esc_html( $event_label );
 					?>
 				</td>
@@ -422,7 +422,7 @@ class Audit_Admin {
 						'wp_cli'     => esc_html__( 'WP-CLI', 'fullworks-active-users-monitor' ),
 						'migrated'   => esc_html__( 'Migrated', 'fullworks-active-users-monitor' ),
 					);
-					$method_label = isset( $method_labels[ $entry->login_method ] ) ? $method_labels[ $entry->login_method ] : $entry->login_method;
+					$method_label  = isset( $method_labels[ $entry->login_method ] ) ? $method_labels[ $entry->login_method ] : $entry->login_method;
 					echo esc_html( $method_label );
 					?>
 				</td>
@@ -439,7 +439,7 @@ class Audit_Admin {
 						$minutes = round( $duration / 60 );
 						echo esc_html( sprintf( _n( '%d minute', '%d minutes', $minutes, 'fullworks-active-users-monitor' ), $minutes ) );
 					} else {
-						$hours = floor( $duration / 3600 );
+						$hours   = floor( $duration / 3600 );
 						$minutes = round( ( $duration % 3600 ) / 60 );
 						if ( $minutes > 0 ) {
 							echo esc_html( sprintf( __( '%1$d hours %2$d minutes', 'fullworks-active-users-monitor' ), $hours, $minutes ) );

@@ -80,7 +80,7 @@ class Audit_Logger {
 
 		// Calculate session duration.
 		$session_duration = null;
-		$session_start = get_user_meta( $user_id, 'fwaum_session_start', true );
+		$session_start    = get_user_meta( $user_id, 'fwaum_session_start', true );
 		if ( $session_start ) {
 			$session_duration = time() - intval( $session_start );
 			delete_user_meta( $user_id, 'fwaum_session_start' );
@@ -106,8 +106,8 @@ class Audit_Logger {
 	 */
 	public function log_failed_login( $username ) {
 		// Get user ID if username exists.
-		$user = get_user_by( 'login', $username );
-		$user_id = $user ? $user->ID : 0;
+		$user         = get_user_by( 'login', $username );
+		$user_id      = $user ? $user->ID : 0;
 		$display_name = $user ? $user->display_name : $username;
 
 		$this->log_event(
@@ -117,7 +117,7 @@ class Audit_Logger {
 			'failed_login',
 			array(
 				'attempted_username' => $username,
-				'user_exists' => $user ? true : false,
+				'user_exists'        => $user ? true : false,
 			)
 		);
 	}
@@ -175,16 +175,16 @@ class Audit_Logger {
 
 		// Prepare data for insertion.
 		$data = array(
-			'user_id' => intval( $user_id ),
-			'username' => sanitize_text_field( $username ),
-			'display_name' => sanitize_text_field( $display_name ),
-			'event_type' => $event_type,
-			'timestamp' => current_time( 'mysql' ),
-			'ip_address' => sanitize_text_field( $ip_address ),
-			'user_agent' => sanitize_text_field( $user_agent ),
-			'login_method' => isset( $additional_data['login_method'] ) ? sanitize_text_field( $additional_data['login_method'] ) : 'standard',
+			'user_id'          => intval( $user_id ),
+			'username'         => sanitize_text_field( $username ),
+			'display_name'     => sanitize_text_field( $display_name ),
+			'event_type'       => $event_type,
+			'timestamp'        => current_time( 'mysql' ),
+			'ip_address'       => sanitize_text_field( $ip_address ),
+			'user_agent'       => sanitize_text_field( $user_agent ),
+			'login_method'     => isset( $additional_data['login_method'] ) ? sanitize_text_field( $additional_data['login_method'] ) : 'standard',
 			'session_duration' => $session_duration,
-			'additional_data' => wp_json_encode( $additional_data ),
+			'additional_data'  => wp_json_encode( $additional_data ),
 		);
 
 		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' );
@@ -284,15 +284,15 @@ class Audit_Logger {
 		$table_name = Audit_Installer::get_table_name();
 
 		$defaults = array(
-			'per_page' => 20,
-			'page' => 1,
-			'orderby' => 'timestamp',
-			'order' => 'DESC',
-			'user_id' => null,
+			'per_page'   => 20,
+			'page'       => 1,
+			'orderby'    => 'timestamp',
+			'order'      => 'DESC',
+			'user_id'    => null,
 			'event_type' => null,
-			'date_from' => null,
-			'date_to' => null,
-			'search' => null,
+			'date_from'  => null,
+			'date_to'    => null,
+			'search'     => null,
 			'ip_address' => null,
 		);
 
@@ -300,52 +300,52 @@ class Audit_Logger {
 
 		// Build WHERE clause.
 		$where_conditions = array( '1=1' );
-		$where_values = array();
+		$where_values     = array();
 
 		if ( $args['user_id'] ) {
 			$where_conditions[] = 'user_id = %d';
-			$where_values[] = intval( $args['user_id'] );
+			$where_values[]     = intval( $args['user_id'] );
 		}
 
 		if ( $args['event_type'] ) {
 			$where_conditions[] = 'event_type = %s';
-			$where_values[] = $args['event_type'];
+			$where_values[]     = $args['event_type'];
 		}
 
 		if ( $args['date_from'] ) {
 			$where_conditions[] = 'timestamp >= %s';
-			$where_values[] = $args['date_from'] . ' 00:00:00';
+			$where_values[]     = $args['date_from'] . ' 00:00:00';
 		}
 
 		if ( $args['date_to'] ) {
 			$where_conditions[] = 'timestamp <= %s';
-			$where_values[] = $args['date_to'] . ' 23:59:59';
+			$where_values[]     = $args['date_to'] . ' 23:59:59';
 		}
 
 		if ( $args['search'] ) {
 			$where_conditions[] = '(username LIKE %s OR display_name LIKE %s OR ip_address LIKE %s)';
-			$search_term = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-			$where_values[] = $search_term;
-			$where_values[] = $search_term;
-			$where_values[] = $search_term;
+			$search_term        = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$where_values[]     = $search_term;
+			$where_values[]     = $search_term;
+			$where_values[]     = $search_term;
 		}
 
 		if ( $args['ip_address'] ) {
 			$where_conditions[] = 'ip_address = %s';
-			$where_values[] = $args['ip_address'];
+			$where_values[]     = $args['ip_address'];
 		}
 
 		$where_clause = implode( ' AND ', $where_conditions );
 
 		// Build ORDER BY clause.
 		$allowed_orderby = array( 'id', 'user_id', 'username', 'event_type', 'timestamp', 'ip_address' );
-		$orderby = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'timestamp';
-		$order = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
+		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'timestamp';
+		$order           = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
 
 		// Calculate LIMIT and OFFSET.
 		$per_page = max( 1, intval( $args['per_page'] ) );
-		$page = max( 1, intval( $args['page'] ) );
-		$offset = ( $page - 1 ) * $per_page;
+		$page     = max( 1, intval( $args['page'] ) );
+		$offset   = ( $page - 1 ) * $per_page;
 
 		// Get total count.
 		$count_query = "SELECT COUNT(*) FROM $table_name WHERE $where_clause";
@@ -355,12 +355,12 @@ class Audit_Logger {
 		$total_items = intval( $wpdb->get_var( $count_query ) );
 
 		// Get entries.
-		$query = "SELECT * FROM $table_name WHERE $where_clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
+		$query        = "SELECT * FROM $table_name WHERE $where_clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
 		$query_values = array_merge( $where_values, array( $per_page, $offset ) );
-		$results = $wpdb->get_results( $wpdb->prepare( $query, $query_values ) );
+		$results      = $wpdb->get_results( $wpdb->prepare( $query, $query_values ) );
 
 		return array(
-			'entries' => $results,
+			'entries'     => $results,
 			'total_items' => $total_items,
 			'total_pages' => ceil( $total_items / $per_page ),
 		);
@@ -378,10 +378,22 @@ class Audit_Logger {
 
 		// Define date ranges.
 		$date_ranges = array(
-			'today' => array( 'start' => date( 'Y-m-d 00:00:00' ), 'end' => date( 'Y-m-d 23:59:59' ) ),
-			'week' => array( 'start' => date( 'Y-m-d 00:00:00', strtotime( '-7 days' ) ), 'end' => date( 'Y-m-d 23:59:59' ) ),
-			'month' => array( 'start' => date( 'Y-m-d 00:00:00', strtotime( '-30 days' ) ), 'end' => date( 'Y-m-d 23:59:59' ) ),
-			'year' => array( 'start' => date( 'Y-m-d 00:00:00', strtotime( '-365 days' ) ), 'end' => date( 'Y-m-d 23:59:59' ) ),
+			'today' => array(
+				'start' => date( 'Y-m-d 00:00:00' ),
+				'end'   => date( 'Y-m-d 23:59:59' ),
+			),
+			'week'  => array(
+				'start' => date( 'Y-m-d 00:00:00', strtotime( '-7 days' ) ),
+				'end'   => date( 'Y-m-d 23:59:59' ),
+			),
+			'month' => array(
+				'start' => date( 'Y-m-d 00:00:00', strtotime( '-30 days' ) ),
+				'end'   => date( 'Y-m-d 23:59:59' ),
+			),
+			'year'  => array(
+				'start' => date( 'Y-m-d 00:00:00', strtotime( '-365 days' ) ),
+				'end'   => date( 'Y-m-d 23:59:59' ),
+			),
 		);
 
 		if ( ! isset( $date_ranges[ $period ] ) ) {
@@ -389,7 +401,7 @@ class Audit_Logger {
 		}
 
 		$start_date = $date_ranges[ $period ]['start'];
-		$end_date = $date_ranges[ $period ]['end'];
+		$end_date   = $date_ranges[ $period ]['end'];
 
 		// Get event counts by type.
 		$event_counts = $wpdb->get_results(
@@ -404,16 +416,16 @@ class Audit_Logger {
 		);
 
 		$stats = array(
-			'login' => 0,
-			'logout' => 0,
-			'failed_login' => 0,
+			'login'           => 0,
+			'logout'          => 0,
+			'failed_login'    => 0,
 			'session_expired' => 0,
-			'total' => 0,
+			'total'           => 0,
 		);
 
 		foreach ( $event_counts as $count ) {
 			$stats[ $count->event_type ] = intval( $count->count );
-			$stats['total'] += intval( $count->count );
+			$stats['total']             += intval( $count->count );
 		}
 
 		// Get unique users count.
@@ -437,7 +449,7 @@ class Audit_Logger {
 	 * Clean up old log entries based on retention settings
 	 */
 	public function cleanup_old_logs() {
-		$options = get_option( 'fwaum_settings', array() );
+		$options        = get_option( 'fwaum_settings', array() );
 		$retention_days = isset( $options['audit_retention_days'] ) ? intval( $options['audit_retention_days'] ) : 90;
 
 		if ( $retention_days > 0 ) {
@@ -453,40 +465,46 @@ class Audit_Logger {
 	 */
 	public static function export_to_csv( $args = array() ) {
 		$args['per_page'] = 10000; // Large number for export.
-		$results = self::get_audit_entries( $args );
+		$results          = self::get_audit_entries( $args );
 
 		$output = fopen( 'php://temp', 'r+' );
 
 		// Write CSV header.
-		fputcsv( $output, array(
-			'ID',
-			'User ID',
-			'Username',
-			'Display Name',
-			'Event Type',
-			'Timestamp',
-			'IP Address',
-			'User Agent',
-			'Login Method',
-			'Session Duration',
-			'Additional Data',
-		) );
+		fputcsv(
+			$output,
+			array(
+				'ID',
+				'User ID',
+				'Username',
+				'Display Name',
+				'Event Type',
+				'Timestamp',
+				'IP Address',
+				'User Agent',
+				'Login Method',
+				'Session Duration',
+				'Additional Data',
+			)
+		);
 
 		// Write data rows.
 		foreach ( $results['entries'] as $entry ) {
-			fputcsv( $output, array(
-				$entry->id,
-				$entry->user_id,
-				$entry->username,
-				$entry->display_name,
-				$entry->event_type,
-				$entry->timestamp,
-				$entry->ip_address,
-				$entry->user_agent,
-				$entry->login_method,
-				$entry->session_duration ? gmdate( 'H:i:s', $entry->session_duration ) : '',
-				$entry->additional_data,
-			) );
+			fputcsv(
+				$output,
+				array(
+					$entry->id,
+					$entry->user_id,
+					$entry->username,
+					$entry->display_name,
+					$entry->event_type,
+					$entry->timestamp,
+					$entry->ip_address,
+					$entry->user_agent,
+					$entry->login_method,
+					$entry->session_duration ? gmdate( 'H:i:s', $entry->session_duration ) : '',
+					$entry->additional_data,
+				)
+			);
 		}
 
 		rewind( $output );

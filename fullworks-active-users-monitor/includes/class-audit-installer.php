@@ -45,7 +45,7 @@ class Audit_Installer {
 	public static function install() {
 		global $wpdb;
 
-		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$table_name      = $wpdb->prefix . self::TABLE_NAME;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE $table_name (
@@ -132,14 +132,14 @@ class Audit_Installer {
 			$wpdb->insert(
 				$table_name,
 				array(
-					'user_id' => $user->ID,
-					'username' => $user->user_login,
-					'display_name' => $user->display_name,
-					'event_type' => 'login',
-					'timestamp' => $timestamp,
-					'ip_address' => '0.0.0.0',
-					'user_agent' => 'Migrated from user meta',
-					'login_method' => 'migrated',
+					'user_id'         => $user->ID,
+					'username'        => $user->user_login,
+					'display_name'    => $user->display_name,
+					'event_type'      => 'login',
+					'timestamp'       => $timestamp,
+					'ip_address'      => '0.0.0.0',
+					'user_agent'      => 'Migrated from user meta',
+					'login_method'    => 'migrated',
 					'additional_data' => wp_json_encode( array( 'migrated' => true ) ),
 				),
 				array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )
@@ -161,7 +161,7 @@ class Audit_Installer {
 		}
 
 		global $wpdb;
-		$table_name = self::get_table_name();
+		$table_name  = self::get_table_name();
 		$cutoff_date = date( 'Y-m-d H:i:s', strtotime( "-{$retention_days} days" ) );
 
 		$wpdb->query(
@@ -194,13 +194,13 @@ class Audit_Installer {
 		$table_name = self::get_table_name();
 
 		$total_entries = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-		$oldest_entry = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp ASC LIMIT 1" );
-		$newest_entry = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp DESC LIMIT 1" );
+		$oldest_entry  = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp ASC LIMIT 1" );
+		$newest_entry  = $wpdb->get_var( "SELECT timestamp FROM $table_name ORDER BY timestamp DESC LIMIT 1" );
 
 		return array(
 			'total_entries' => intval( $total_entries ),
-			'oldest_entry' => $oldest_entry,
-			'newest_entry' => $newest_entry,
+			'oldest_entry'  => $oldest_entry,
+			'newest_entry'  => $newest_entry,
 		);
 	}
 }

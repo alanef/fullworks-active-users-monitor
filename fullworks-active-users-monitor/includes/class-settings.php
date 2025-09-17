@@ -202,8 +202,8 @@ class Settings {
 			'fwaum-settings',
 			'fwaum_audit_section',
 			array(
-				'field' => 'audit_retention_days',
-				'label' => esc_html__( 'How long to keep audit log entries', 'fullworks-active-users-monitor' ),
+				'field'   => 'audit_retention_days',
+				'label'   => esc_html__( 'How long to keep audit log entries', 'fullworks-active-users-monitor' ),
 				'options' => array(
 					'30'  => esc_html__( '30 days', 'fullworks-active-users-monitor' ),
 					'60'  => esc_html__( '60 days', 'fullworks-active-users-monitor' ),
@@ -236,8 +236,8 @@ class Settings {
 			'fwaum-settings',
 			'fwaum_audit_section',
 			array(
-				'field' => 'audit_anonymize_ips_days',
-				'label' => esc_html__( 'Anonymize IP addresses after specified period for privacy compliance', 'fullworks-active-users-monitor' ),
+				'field'   => 'audit_anonymize_ips_days',
+				'label'   => esc_html__( 'Anonymize IP addresses after specified period for privacy compliance', 'fullworks-active-users-monitor' ),
 				'options' => array(
 					'0'  => esc_html__( 'Never anonymize', 'fullworks-active-users-monitor' ),
 					'7'  => esc_html__( '7 days', 'fullworks-active-users-monitor' ),
@@ -255,16 +255,16 @@ class Settings {
 	 */
 	private function get_default_settings() {
 		return array(
-			'enable_admin_bar'           => true,
-			'refresh_interval'           => 30,
-			'enable_dashboard'           => true,
-			'show_last_seen'             => true,
-			'enable_animations'          => true,
-			'view_roles'                 => array( 'administrator' ),
-			'enable_audit_log'           => false,
-			'audit_retention_days'       => 90,
-			'audit_track_failed_logins'  => true,
-			'audit_anonymize_ips_days'   => 30,
+			'enable_admin_bar'          => true,
+			'refresh_interval'          => 30,
+			'enable_dashboard'          => true,
+			'show_last_seen'            => true,
+			'enable_animations'         => true,
+			'view_roles'                => array( 'administrator' ),
+			'enable_audit_log'          => false,
+			'audit_retention_days'      => 90,
+			'audit_track_failed_logins' => true,
+			'audit_anonymize_ips_days'  => 30,
 		);
 	}
 
@@ -278,18 +278,18 @@ class Settings {
 		$sanitized = array();
 
 		// Checkboxes.
-		$sanitized['enable_admin_bar']           = ! empty( $input['enable_admin_bar'] );
-		$sanitized['enable_dashboard']           = ! empty( $input['enable_dashboard'] );
-		$sanitized['show_last_seen']             = ! empty( $input['show_last_seen'] );
-		$sanitized['enable_animations']          = ! empty( $input['enable_animations'] );
-		$sanitized['enable_audit_log']           = ! empty( $input['enable_audit_log'] );
-		$sanitized['audit_track_failed_logins']  = ! empty( $input['audit_track_failed_logins'] );
+		$sanitized['enable_admin_bar']          = ! empty( $input['enable_admin_bar'] );
+		$sanitized['enable_dashboard']          = ! empty( $input['enable_dashboard'] );
+		$sanitized['show_last_seen']            = ! empty( $input['show_last_seen'] );
+		$sanitized['enable_animations']         = ! empty( $input['enable_animations'] );
+		$sanitized['enable_audit_log']          = ! empty( $input['enable_audit_log'] );
+		$sanitized['audit_track_failed_logins'] = ! empty( $input['audit_track_failed_logins'] );
 
 		// Numbers.
 		$sanitized['refresh_interval'] = isset( $input['refresh_interval'] ) ? absint( $input['refresh_interval'] ) : 30;
 		$sanitized['refresh_interval'] = max( 15, min( 300, $sanitized['refresh_interval'] ) );
 
-		$sanitized['audit_retention_days'] = isset( $input['audit_retention_days'] ) ? absint( $input['audit_retention_days'] ) : 90;
+		$sanitized['audit_retention_days']     = isset( $input['audit_retention_days'] ) ? absint( $input['audit_retention_days'] ) : 90;
 		$sanitized['audit_anonymize_ips_days'] = isset( $input['audit_anonymize_ips_days'] ) ? absint( $input['audit_anonymize_ips_days'] ) : 30;
 
 		// Roles.

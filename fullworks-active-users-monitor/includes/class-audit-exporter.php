@@ -39,12 +39,12 @@ class Audit_Exporter {
 		}
 
 		// Get export parameters.
-		$format = isset( $_REQUEST['format'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['format'] ) ) : 'csv';
-		$user_id = isset( $_REQUEST['user_id'] ) ? intval( $_REQUEST['user_id'] ) : null;
+		$format     = isset( $_REQUEST['format'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['format'] ) ) : 'csv';
+		$user_id    = isset( $_REQUEST['user_id'] ) ? intval( $_REQUEST['user_id'] ) : null;
 		$event_type = isset( $_REQUEST['event_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['event_type'] ) ) : null;
-		$date_from = isset( $_REQUEST['date_from'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['date_from'] ) ) : null;
-		$date_to = isset( $_REQUEST['date_to'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['date_to'] ) ) : null;
-		$search = isset( $_REQUEST['search'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search'] ) ) : null;
+		$date_from  = isset( $_REQUEST['date_from'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['date_from'] ) ) : null;
+		$date_to    = isset( $_REQUEST['date_to'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['date_to'] ) ) : null;
+		$search     = isset( $_REQUEST['search'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search'] ) ) : null;
 
 		// Prepare query arguments.
 		$args = array(
@@ -96,38 +96,44 @@ class Audit_Exporter {
 		$output = fopen( 'php://output', 'w' );
 
 		// Write BOM for proper Excel UTF-8 handling.
-		fprintf( $output, chr(0xEF).chr(0xBB).chr(0xBF) );
+		fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
 		// Write CSV header.
-		fputcsv( $output, array(
-			__( 'ID', 'fullworks-active-users-monitor' ),
-			__( 'User ID', 'fullworks-active-users-monitor' ),
-			__( 'Username', 'fullworks-active-users-monitor' ),
-			__( 'Display Name', 'fullworks-active-users-monitor' ),
-			__( 'Event Type', 'fullworks-active-users-monitor' ),
-			__( 'Date & Time', 'fullworks-active-users-monitor' ),
-			__( 'IP Address', 'fullworks-active-users-monitor' ),
-			__( 'User Agent', 'fullworks-active-users-monitor' ),
-			__( 'Login Method', 'fullworks-active-users-monitor' ),
-			__( 'Session Duration (seconds)', 'fullworks-active-users-monitor' ),
-			__( 'Additional Data', 'fullworks-active-users-monitor' ),
-		) );
+		fputcsv(
+			$output,
+			array(
+				__( 'ID', 'fullworks-active-users-monitor' ),
+				__( 'User ID', 'fullworks-active-users-monitor' ),
+				__( 'Username', 'fullworks-active-users-monitor' ),
+				__( 'Display Name', 'fullworks-active-users-monitor' ),
+				__( 'Event Type', 'fullworks-active-users-monitor' ),
+				__( 'Date & Time', 'fullworks-active-users-monitor' ),
+				__( 'IP Address', 'fullworks-active-users-monitor' ),
+				__( 'User Agent', 'fullworks-active-users-monitor' ),
+				__( 'Login Method', 'fullworks-active-users-monitor' ),
+				__( 'Session Duration (seconds)', 'fullworks-active-users-monitor' ),
+				__( 'Additional Data', 'fullworks-active-users-monitor' ),
+			)
+		);
 
 		// Write data rows.
 		foreach ( $results['entries'] as $entry ) {
-			fputcsv( $output, array(
-				$entry->id,
-				$entry->user_id,
-				$entry->username,
-				$entry->display_name,
-				$this->get_event_type_label( $entry->event_type ),
-				$entry->timestamp,
-				$entry->ip_address,
-				$entry->user_agent,
-				$this->get_login_method_label( $entry->login_method ),
-				$entry->session_duration,
-				$entry->additional_data,
-			) );
+			fputcsv(
+				$output,
+				array(
+					$entry->id,
+					$entry->user_id,
+					$entry->username,
+					$entry->display_name,
+					$this->get_event_type_label( $entry->event_type ),
+					$entry->timestamp,
+					$entry->ip_address,
+					$entry->user_agent,
+					$this->get_login_method_label( $entry->login_method ),
+					$entry->session_duration,
+					$entry->additional_data,
+				)
+			);
 		}
 
 		fclose( $output );
@@ -146,28 +152,28 @@ class Audit_Exporter {
 		// Prepare data for JSON export.
 		$data = array(
 			'export_info' => array(
-				'exported_at' => current_time( 'mysql' ),
-				'total_entries' => $results['total_items'],
+				'exported_at'     => current_time( 'mysql' ),
+				'total_entries'   => $results['total_items'],
 				'filters_applied' => array_filter( $args ),
 			),
-			'entries' => array(),
+			'entries'     => array(),
 		);
 
 		foreach ( $results['entries'] as $entry ) {
 			$data['entries'][] = array(
-				'id' => intval( $entry->id ),
-				'user_id' => intval( $entry->user_id ),
-				'username' => $entry->username,
-				'display_name' => $entry->display_name,
-				'event_type' => $entry->event_type,
-				'event_type_label' => $this->get_event_type_label( $entry->event_type ),
-				'timestamp' => $entry->timestamp,
-				'ip_address' => $entry->ip_address,
-				'user_agent' => $entry->user_agent,
-				'login_method' => $entry->login_method,
+				'id'                 => intval( $entry->id ),
+				'user_id'            => intval( $entry->user_id ),
+				'username'           => $entry->username,
+				'display_name'       => $entry->display_name,
+				'event_type'         => $entry->event_type,
+				'event_type_label'   => $this->get_event_type_label( $entry->event_type ),
+				'timestamp'          => $entry->timestamp,
+				'ip_address'         => $entry->ip_address,
+				'user_agent'         => $entry->user_agent,
+				'login_method'       => $entry->login_method,
 				'login_method_label' => $this->get_login_method_label( $entry->login_method ),
-				'session_duration' => $entry->session_duration ? intval( $entry->session_duration ) : null,
-				'additional_data' => json_decode( $entry->additional_data, true ),
+				'session_duration'   => $entry->session_duration ? intval( $entry->session_duration ) : null,
+				'additional_data'    => json_decode( $entry->additional_data, true ),
 			);
 		}
 
@@ -226,16 +232,46 @@ class Audit_Exporter {
 		foreach ( $results['entries'] as $entry ) {
 			echo '<Row>' . "\n";
 			$cells = array(
-				array( 'type' => 'Number', 'value' => $entry->id ),
-				array( 'type' => 'Number', 'value' => $entry->user_id ),
-				array( 'type' => 'String', 'value' => $entry->username ),
-				array( 'type' => 'String', 'value' => $entry->display_name ),
-				array( 'type' => 'String', 'value' => $this->get_event_type_label( $entry->event_type ) ),
-				array( 'type' => 'DateTime', 'value' => $entry->timestamp ),
-				array( 'type' => 'String', 'value' => $entry->ip_address ),
-				array( 'type' => 'String', 'value' => $entry->user_agent ),
-				array( 'type' => 'String', 'value' => $this->get_login_method_label( $entry->login_method ) ),
-				array( 'type' => 'Number', 'value' => $entry->session_duration ?? '' ),
+				array(
+					'type'  => 'Number',
+					'value' => $entry->id,
+				),
+				array(
+					'type'  => 'Number',
+					'value' => $entry->user_id,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $entry->username,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $entry->display_name,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $this->get_event_type_label( $entry->event_type ),
+				),
+				array(
+					'type'  => 'DateTime',
+					'value' => $entry->timestamp,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $entry->ip_address,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $entry->user_agent,
+				),
+				array(
+					'type'  => 'String',
+					'value' => $this->get_login_method_label( $entry->login_method ),
+				),
+				array(
+					'type'  => 'Number',
+					'value' => $entry->session_duration ?? '',
+				),
 			);
 
 			foreach ( $cells as $cell ) {
@@ -292,8 +328,8 @@ class Audit_Exporter {
 
 		// Add extension.
 		$extensions = array(
-			'csv' => 'csv',
-			'json' => 'json',
+			'csv'   => 'csv',
+			'json'  => 'json',
 			'excel' => 'xls',
 		);
 
@@ -351,18 +387,18 @@ class Audit_Exporter {
 		$stats = array(
 			'total_entries' => 0,
 			'size_estimate' => '0 KB',
-			'oldest_entry' => null,
-			'newest_entry' => null,
+			'oldest_entry'  => null,
+			'newest_entry'  => null,
 		);
 
 		// Get basic stats.
-		$total = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+		$total                  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
 		$stats['total_entries'] = intval( $total );
 
 		if ( $stats['total_entries'] > 0 ) {
 			// Estimate size (rough calculation).
-			$avg_row_size = 500; // bytes.
-			$estimated_size = $stats['total_entries'] * $avg_row_size;
+			$avg_row_size           = 500; // bytes.
+			$estimated_size         = $stats['total_entries'] * $avg_row_size;
 			$stats['size_estimate'] = size_format( $estimated_size );
 
 			// Get date range.

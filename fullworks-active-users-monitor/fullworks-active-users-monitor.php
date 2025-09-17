@@ -286,15 +286,15 @@ register_activation_hook(
 	function () {
 		// Set default options.
 		$default_options = array(
-			'enable_admin_bar'           => true,
-			'refresh_interval'           => 30,
-			'enable_dashboard'           => true,
-			'show_last_seen'             => true,
-			'enable_animations'          => true,
-			'enable_audit_log'           => false,
-			'audit_retention_days'       => 90,
-			'audit_track_failed_logins'  => true,
-			'audit_anonymize_ips_days'   => 30,
+			'enable_admin_bar'          => true,
+			'refresh_interval'          => 30,
+			'enable_dashboard'          => true,
+			'show_last_seen'            => true,
+			'enable_animations'         => true,
+			'enable_audit_log'          => false,
+			'audit_retention_days'      => 90,
+			'audit_track_failed_logins' => true,
+			'audit_anonymize_ips_days'  => 30,
 		);
 
 		if ( false === get_option( 'fwaum_settings' ) ) {

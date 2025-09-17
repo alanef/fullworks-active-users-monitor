@@ -61,10 +61,10 @@ class Audit_Table extends \WP_List_Table {
 	 */
 	protected function get_sortable_columns() {
 		return array(
-			'username'    => array( 'username', false ),
-			'event_type'  => array( 'event_type', false ),
-			'timestamp'   => array( 'timestamp', true ),
-			'ip_address'  => array( 'ip_address', false ),
+			'username'   => array( 'username', false ),
+			'event_type' => array( 'event_type', false ),
+			'timestamp'  => array( 'timestamp', true ),
+			'ip_address' => array( 'ip_address', false ),
 		);
 	}
 
@@ -104,7 +104,7 @@ class Audit_Table extends \WP_List_Table {
 				),
 				admin_url( 'user-edit.php' )
 			);
-			$user_link = sprintf(
+			$user_link     = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( $user_edit_url ),
 				esc_html( $item->display_name )
@@ -140,13 +140,28 @@ class Audit_Table extends \WP_List_Table {
 	 */
 	protected function column_event_type( $item ) {
 		$event_labels = array(
-			'login'           => array( 'label' => esc_html__( 'Login', 'fullworks-active-users-monitor' ), 'class' => 'success' ),
-			'logout'          => array( 'label' => esc_html__( 'Logout', 'fullworks-active-users-monitor' ), 'class' => 'info' ),
-			'failed_login'    => array( 'label' => esc_html__( 'Failed Login', 'fullworks-active-users-monitor' ), 'class' => 'error' ),
-			'session_expired' => array( 'label' => esc_html__( 'Session Expired', 'fullworks-active-users-monitor' ), 'class' => 'warning' ),
+			'login'           => array(
+				'label' => esc_html__( 'Login', 'fullworks-active-users-monitor' ),
+				'class' => 'success',
+			),
+			'logout'          => array(
+				'label' => esc_html__( 'Logout', 'fullworks-active-users-monitor' ),
+				'class' => 'info',
+			),
+			'failed_login'    => array(
+				'label' => esc_html__( 'Failed Login', 'fullworks-active-users-monitor' ),
+				'class' => 'error',
+			),
+			'session_expired' => array(
+				'label' => esc_html__( 'Session Expired', 'fullworks-active-users-monitor' ),
+				'class' => 'warning',
+			),
 		);
 
-		$event_info = isset( $event_labels[ $item->event_type ] ) ? $event_labels[ $item->event_type ] : array( 'label' => $item->event_type, 'class' => 'default' );
+		$event_info = isset( $event_labels[ $item->event_type ] ) ? $event_labels[ $item->event_type ] : array(
+			'label' => $item->event_type,
+			'class' => 'default',
+		);
 
 		return sprintf(
 			'<span class="fwaum-event-badge fwaum-event-%s">%s</span>',
@@ -162,9 +177,9 @@ class Audit_Table extends \WP_List_Table {
 	 * @return string Timestamp column HTML.
 	 */
 	protected function column_timestamp( $item ) {
-		$timestamp = strtotime( $item->timestamp );
+		$timestamp      = strtotime( $item->timestamp );
 		$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
-		$relative_time = human_time_diff( $timestamp, time() );
+		$relative_time  = human_time_diff( $timestamp, time() );
 
 		return sprintf(
 			'%s<br><small>%s ago</small>',
@@ -233,10 +248,10 @@ class Audit_Table extends \WP_List_Table {
 		} elseif ( $duration < 3600 ) {
 			return sprintf( esc_html__( '%dm', 'fullworks-active-users-monitor' ), round( $duration / 60 ) );
 		} else {
-			$hours = floor( $duration / 3600 );
+			$hours   = floor( $duration / 3600 );
 			$minutes = round( ( $duration % 3600 ) / 60 );
 			if ( $minutes > 0 ) {
-				return sprintf( esc_html__( '%dh %dm', 'fullworks-active-users-monitor' ), $hours, $minutes );
+				return sprintf( esc_html__( '%1$dh %2$dm', 'fullworks-active-users-monitor' ), $hours, $minutes );
 			} else {
 				return sprintf( esc_html__( '%dh', 'fullworks-active-users-monitor' ), $hours );
 			}
@@ -280,19 +295,19 @@ class Audit_Table extends \WP_List_Table {
 	 * Prepare items for display
 	 */
 	public function prepare_items() {
-		$per_page = 20;
+		$per_page     = 20;
 		$current_page = $this->get_pagenum();
 
 		// Get filter values.
-		$user_id = isset( $_GET['user_id'] ) ? intval( $_GET['user_id'] ) : null;
+		$user_id    = isset( $_GET['user_id'] ) ? intval( $_GET['user_id'] ) : null;
 		$event_type = isset( $_GET['event_type'] ) ? sanitize_text_field( wp_unslash( $_GET['event_type'] ) ) : null;
-		$date_from = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : null;
-		$date_to = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : null;
-		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : null;
+		$date_from  = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : null;
+		$date_to    = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : null;
+		$search     = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : null;
 
 		// Get sorting parameters.
 		$orderby = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) : 'timestamp';
-		$order = isset( $_GET['order'] ) ? sanitize_text_field( wp_unslash( $_GET['order'] ) ) : 'desc';
+		$order   = isset( $_GET['order'] ) ? sanitize_text_field( wp_unslash( $_GET['order'] ) ) : 'desc';
 
 		// Prepare query arguments.
 		$args = array(
@@ -338,11 +353,11 @@ class Audit_Table extends \WP_List_Table {
 	 * @return array Views array.
 	 */
 	protected function get_views() {
-		$views = array();
+		$views        = array();
 		$current_view = isset( $_GET['event_type'] ) ? sanitize_text_field( wp_unslash( $_GET['event_type'] ) ) : '';
 
 		// All entries.
-		$all_url = remove_query_arg( array( 'event_type' ) );
+		$all_url      = remove_query_arg( array( 'event_type' ) );
 		$views['all'] = sprintf(
 			'<a href="%s"%s>%s</a>',
 			esc_url( $all_url ),
@@ -359,7 +374,7 @@ class Audit_Table extends \WP_List_Table {
 		);
 
 		foreach ( $event_types as $type => $label ) {
-			$type_url = add_query_arg( array( 'event_type' => $type ) );
+			$type_url       = add_query_arg( array( 'event_type' => $type ) );
 			$views[ $type ] = sprintf(
 				'<a href="%s"%s>%s</a>',
 				esc_url( $type_url ),
@@ -386,19 +401,19 @@ class Audit_Table extends \WP_List_Table {
 				<?php esc_html_e( 'Filter by date from', 'fullworks-active-users-monitor' ); ?>
 			</label>
 			<input type="date"
-				   id="filter-date-from"
-				   name="date_from"
-				   value="<?php echo esc_attr( isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : '' ); ?>"
-				   placeholder="<?php esc_attr_e( 'From date', 'fullworks-active-users-monitor' ); ?>" />
+					id="filter-date-from"
+					name="date_from"
+					value="<?php echo esc_attr( isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : '' ); ?>"
+					placeholder="<?php esc_attr_e( 'From date', 'fullworks-active-users-monitor' ); ?>" />
 
 			<label for="filter-date-to" class="screen-reader-text">
 				<?php esc_html_e( 'Filter by date to', 'fullworks-active-users-monitor' ); ?>
 			</label>
 			<input type="date"
-				   id="filter-date-to"
-				   name="date_to"
-				   value="<?php echo esc_attr( isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : '' ); ?>"
-				   placeholder="<?php esc_attr_e( 'To date', 'fullworks-active-users-monitor' ); ?>" />
+					id="filter-date-to"
+					name="date_to"
+					value="<?php echo esc_attr( isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : '' ); ?>"
+					placeholder="<?php esc_attr_e( 'To date', 'fullworks-active-users-monitor' ); ?>" />
 
 			<?php submit_button( esc_html__( 'Filter', 'fullworks-active-users-monitor' ), 'secondary', 'filter_action', false ); ?>
 		</div>
@@ -426,7 +441,7 @@ class Audit_Table extends \WP_List_Table {
 
 			if ( ! empty( $entries ) ) {
 				global $wpdb;
-				$table_name = Audit_Installer::get_table_name();
+				$table_name   = Audit_Installer::get_table_name();
 				$placeholders = implode( ',', array_fill( 0, count( $entries ), '%d' ) );
 
 				$wpdb->query(
