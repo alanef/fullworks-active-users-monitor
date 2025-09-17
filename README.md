@@ -1,49 +1,57 @@
-# WordPress Plugin Boilerplate
+# Fullworks Active Users Monitor
 
-A modern, comprehensive WordPress plugin boilerplate with built-in support for multiple deployment strategies, coding standards, testing, and development tools.
+Real-time monitoring of logged-in WordPress users with visual indicators, filtering, and comprehensive admin tools.
 
-## Features
+## About This Plugin
 
-- 🚀 **Quick Setup** - Get a working plugin in under 5 minutes
-- 📦 **Multiple Deployment Options** - GitHub, WordPress.org SVN, Freemius
-- 🔧 **Modern Development Tools** - wp-env, PHPCS, PHPUnit
-- ✅ **WordPress Coding Standards** - Pre-configured and enforced
-- 🏗️ **Build System** - Automated release builds
-- 🧪 **Testing Ready** - PHPUnit configuration included
-- 📝 **Well Documented** - Clear instructions and examples
+**Fullworks Active Users Monitor** provides administrators with real-time visibility of logged-in users on WordPress sites. Using WordPress's native session tokens system, this plugin accurately tracks user login states and provides powerful monitoring tools.
 
-## Quick Start
+For detailed plugin information, features, and usage instructions, please see the [plugin readme](fullworks-active-users-monitor/readme.txt).
 
-### Method 1: Use as GitHub Template
+## Project Structure
 
-1. Click the "Use this template" button on GitHub
-2. Clone your new repository
-3. Run the setup script:
-   ```bash
-   ./bin/setup-plugin.sh "Your Fullworks Active Users Monitor" "your-plugin-slug"
-   ```
-4. Install dependencies:
-   ```bash
-   composer install
-   npm install
-   ```
-5. Start development:
-   ```bash
-   npm run env:start
-   ```
+```
+fullworks-active-users-monitor/
+├── .github/                      # GitHub Actions workflows
+│   ├── workflows/
+│   │   └── release.yml           # Automated release builds
+│   └── ISSUE_TEMPLATE/           # Issue templates
+├── fullworks-active-users-monitor/  # Main plugin directory
+│   ├── fullworks-active-users-monitor.php  # Main plugin file
+│   ├── readme.txt                # WordPress.org readme
+│   ├── includes/                 # Core plugin classes
+│   │   ├── class-user-tracker.php
+│   │   ├── class-admin-bar.php
+│   │   ├── class-settings.php
+│   │   └── ...
+│   ├── admin/                    # Admin-specific functionality
+│   ├── languages/                # Translation files
+│   ├── uninstall.php            # Cleanup on uninstall
+│   └── .distignore              # Build exclusions
+├── tests/                        # PHPUnit tests
+├── bin/                          # Build and setup scripts
+├── .wp-env.json                  # Local development config
+├── composer.json                 # PHP dependencies
+├── package.json                  # Node dependencies
+└── phpcs.xml.dist               # Coding standards config
+```
 
-### Method 2: Clone and Configure
+## Development Setup
+
+### Prerequisites
+
+- **PHP**: 7.4 or higher
+- **WordPress**: 5.9 or higher
+- **Node.js**: 18.0.0 or higher
+- **npm**: 8.0.0 or higher
+- **Composer**: 2.0 or higher
+
+### Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/alanef/wordpress-plugin-boilerplate.git my-plugin
-cd my-plugin
-
-# Remove git history
-rm -rf .git
-
-# Run setup
-./bin/setup-plugin.sh "My Plugin" "my-plugin"
+git clone https://github.com/alanef/fullworks-active-users-monitor.git
+cd fullworks-active-users-monitor
 
 # Install dependencies
 composer install
@@ -53,263 +61,68 @@ npm install
 npm run env:start
 ```
 
-## Project Structure
+Access the local WordPress site at http://localhost:8888 (admin/password).
 
-```
-wordpress-plugin-boilerplate/
-├── .github/                      # GitHub Actions workflows
-│   ├── workflows/
-│   │   ├── build-release.yml     # Automated release builds
-│   │   └── *.yml.example          # Optional deployment workflows
-│   └── ISSUE_TEMPLATE/            # Issue templates
-├── fullworks-active-users-monitor/                   # Main plugin directory
-│   ├── fullworks-active-users-monitor.php            # Main plugin file
-│   ├── readme.txt                 # WordPress.org readme
-│   ├── uninstall.php              # Cleanup on uninstall
-│   └── .distignore                # Build exclusions
-├── tests/                         # PHPUnit tests
-├── bin/                           # Build and setup scripts
-├── .wp-env.json                   # Local development config
-├── composer.json                  # PHP dependencies
-├── package.json                   # Node dependencies
-└── phpcs.xml.dist                 # Coding standards config
-```
-
-## Available Commands
-
-### Development
+### Available Commands
 
 ```bash
-# Start local WordPress environment
-npm run env:start
+# Development Environment
+npm run env:start       # Start local WordPress
+npm run env:stop        # Stop environment
+npm run env:reset       # Reset environment
+npm run env:cli         # Access WP-CLI
 
-# Stop environment
-npm run env:stop
+# Code Quality
+npm run lint:php        # Check PHP coding standards
+npm run lint:php:fix    # Fix PHP coding standards
+npm run test            # Run PHPUnit tests
 
-# Reset environment
-npm run env:reset
-
-# Access WP-CLI
-npm run env:cli
-```
-
-### Code Quality
-
-```bash
-# Check PHP coding standards
-npm run lint:php
-
-# Fix PHP coding standards
-npm run lint:php:fix
-
-# Run PHPUnit tests
-npm run test
-```
-
-### Build & Release
-
-```bash
-# Build release package
-npm run build
-
-# Setup new plugin from boilerplate
-npm run setup
-```
-
-## Deployment Strategies
-
-### 1. GitHub Only (Default)
-
-The simplest deployment strategy. Push tags to trigger automated GitHub releases.
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The `build-release.yml` workflow will automatically create a release with the plugin ZIP file.
-
-### 2. WordPress.org SVN Repository
-
-For free plugins distributed via WordPress.org:
-
-1. Rename `.github/workflows/deploy-wordpress-svn.yml.example` to `.github/workflows/deploy-wordpress-svn.yml`
-2. Add secrets to your GitHub repository:
-   - `SVN_USERNAME` - Your WordPress.org username
-   - `SVN_PASSWORD` - Your WordPress.org password
-   - `SLUG` - Your plugin slug on WordPress.org
-
-### 3. Freemius Integration
-
-For premium or freemium plugins:
-
-#### Premium Only
-1. Rename `.github/workflows/deploy-freemius.yml.example` to `.github/workflows/deploy-freemius.yml`
-2. Add Freemius secrets to GitHub:
-   - `FREEMIUS_DEV_ID`
-   - `FREEMIUS_PLUGIN_ID`
-   - `FREEMIUS_PUBLIC_KEY`
-   - `FREEMIUS_SECRET_KEY`
-
-#### Freemium (Free + Premium)
-1. Use both Freemius deployment and sync workflows
-2. Rename `.github/workflows/sync-freemius-free.yml.example` to `.github/workflows/sync-freemius-free.yml`
-3. This will sync the free version from Freemius to your public repository
-4. For advanced automation setup, see [FREEMIUS-WORKFLOW-SETUP.md](FREEMIUS-WORKFLOW-SETUP.md)
-
-## Development Workflow
-
-### Initial Setup
-
-1. **Configure Plugin Header**: Edit `your-plugin/your-plugin.php` with your plugin information
-2. **Update Metadata**: Modify `composer.json` and `package.json` with your details
-3. **Set Text Domain**: Ensure your text domain is consistent throughout
-
-### Daily Development
-
-1. **Start Environment**: `npm run env:start`
-2. **Access WordPress**: http://localhost:8888 (admin/password)
-3. **Make Changes**: Edit files in your plugin directory
-4. **Test Changes**: Your plugin is auto-mounted in the local environment
-5. **Run Tests**: `npm run test`
-6. **Check Standards**: `npm run lint:php`
-
-### Release Process
-
-1. **Update Version**: In main plugin file and readme.txt
-2. **Update Changelog**: In readme.txt
-3. **Commit Changes**: `git commit -am "Version 1.0.1"`
-4. **Tag Release**: `git tag v1.0.1`
-5. **Push**: `git push && git push --tags`
-
-## Testing
-
-### PHPUnit Setup
-
-Tests are configured to run in the wp-env environment:
-
-```bash
-# Run all tests
-npm run test
-
-# Run specific test suite
-npm run test:unit
-npm run test:integration
-```
-
-### Writing Tests
-
-Place test files in:
-- `tests/unit/` - Unit tests
-- `tests/integration/` - Integration tests
-
-Example test included in `tests/test-sample.php`
-
-## Coding Standards
-
-This boilerplate enforces WordPress Coding Standards:
-
-```bash
-# Check for violations
-composer run lint
-
-# Auto-fix violations
-composer run lint:fix
-```
-
-Configuration in `phpcs.xml.dist` includes:
-- WordPress-Core
-- WordPress-Docs
-- WordPress-Extra
-- PHP Compatibility checks
-
-## Configuration Files
-
-### `.wp-env.json`
-Local WordPress environment configuration. Modify to:
-- Change PHP version
-- Add additional plugins
-- Configure WordPress settings
-
-### `phpcs.xml.dist`
-Coding standards configuration. Customize:
-- Text domain
-- Function prefixes
-- Excluded files/directories
-
-### `.distignore`
-Files excluded from distribution builds. Add:
-- Development files
-- Build tools
-- Documentation
-
-## Requirements
-
-- **PHP**: 7.4 or higher
-- **WordPress**: 5.8 or higher
-- **Node.js**: 18.0.0 or higher
-- **npm**: 8.0.0 or higher
-- **Composer**: 2.0 or higher
-
-## Troubleshooting
-
-### Port Conflicts
-
-If port 8888 is in use, modify `.wp-env.json`:
-
-```json
-{
-    "port": 8889
-}
-```
-
-### Permission Issues
-
-Make scripts executable:
-
-```bash
-chmod +x bin/*.sh
-```
-
-### Build Failures
-
-Ensure all dependencies are installed:
-
-```bash
-composer install --no-dev
-npm install
+# Build & Release
+npm run build           # Build release package
 ```
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! We have several open issues tagged as "help wanted" that are great starting points for contributors.
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+### How to Contribute
+
+1. Check our [open issues](https://github.com/alanef/fullworks-active-users-monitor/issues) for "help wanted" tags
+2. Fork the repository
+3. Create a feature branch (`git checkout -b feature/your-feature`)
+4. Make your changes following WordPress coding standards
+5. Run tests and linting: `npm run lint:php` and `npm run test`
+6. Commit your changes with clear messages
+7. Push to your branch
+8. Create a Pull Request with a detailed description
+
+### Development Guidelines
+
+- Follow WordPress Coding Standards (enforced via PHPCS)
+- Add appropriate PHPDoc comments
+- Include unit tests for new features
+- Update documentation as needed
+- Ensure all existing tests pass
+- Test in the local development environment
+
+### Key Files for Contributors
+
+- [CLAUDE.md](CLAUDE.md) - AI assistant instructions and project guidelines
+- [AI-WORDPRESS-PLUGIN-PROMPT.md](AI-WORDPRESS-PLUGIN-PROMPT.md) - WordPress.org compliance requirements
+- [Plugin Readme](fullworks-active-users-monitor/readme.txt) - User-facing documentation
 
 ## Resources
 
 - [WordPress Plugin Handbook](https://developer.wordpress.org/plugins/)
 - [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/)
 - [wp-env Documentation](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/)
-- [Freemius SDK](https://docs.freemius.com/)
-- [GitHub Actions for WordPress](https://github.com/marketplace?type=actions&query=wordpress)
-
-## AI Development
-
-For AI-assisted plugin development, see [AI-WORDPRESS-PLUGIN-PROMPT.md](AI-WORDPRESS-PLUGIN-PROMPT.md) which contains comprehensive instructions for building WordPress.org compliant plugins that will pass review on first submission.
 
 ## License
 
-This boilerplate is licensed under GPL v2 or later. Your plugin can use any GPL-compatible license.
+This plugin is licensed under GPL v2 or later. See [LICENSE](LICENSE) for details.
 
-## Credits
+## Support
 
-Created with best practices from the WordPress community and modern development workflows.
-
----
-
-**Note**: Remember to update this README with your actual plugin information after running the setup script!
+- **Issues**: [GitHub Issues](https://github.com/alanef/fullworks-active-users-monitor/issues)
+- **Donations**: [Ko-fi](https://ko-fi.com/wpalan)
+- **Author**: [Fullworks](https://fullworks.net/)
