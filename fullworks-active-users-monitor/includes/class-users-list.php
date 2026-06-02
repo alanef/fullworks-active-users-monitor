@@ -26,6 +26,13 @@ class Users_List {
 	private $user_tracker;
 
 	/**
+	 * Flag to prevent recursion in filter_users_query
+	 *
+	 * @var bool
+	 */
+	private $is_filtering = false;
+
+	/**
 	 * Constructor
 	 *
 	 * @param User_Tracker $user_tracker User tracker instance.
@@ -97,14 +104,33 @@ class Users_List {
 			return $output;
 		}
 
-		$is_online      = $this->user_tracker->is_user_online( $user_id );
-		$last_seen      = $this->user_tracker->get_formatted_last_seen( $user_id );
-		$options        = get_option( 'fwaum_settings', array() );
-		$show_last_seen = isset( $options['show_last_seen'] ) ? $options['show_last_seen'] : true;
+		$options              = get_option( 'fwaum_settings', array() );
+		$show_last_seen       = isset( $options['show_last_seen'] ) ? $options['show_last_seen'] : true;
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
 
-		$status_class = $is_online ? 'online' : 'offline';
-		$status_icon  = $is_online ? '●' : '○';
-		$status_text  = $is_online ? esc_html__( 'Online', 'fullworks-active-users-monitor' ) : esc_html__( 'Offline', 'fullworks-active-users-monitor' );
+		$status_class = '';
+		$status_icon  = '';
+		$status_text  = '';
+		$display_time = '';
+
+		$is_online = $this->user_tracker->is_user_online( $user_id );
+
+		if ( $enable_true_activity && $this->user_tracker->is_user_truly_active( $user_id ) ) {
+			$status_class = 'active';
+			$status_icon  = '&#x25CF;'; // Solid circle.
+			$status_text  = esc_html__( 'Active', 'fullworks-active-users-monitor' );
+			$display_time = esc_html__( 'Active now', 'fullworks-active-users-monitor' );
+		} elseif ( $is_online ) {
+			$status_class = 'online';
+			$status_icon  = '&#x25CF;'; // Solid circle.
+			$status_text  = esc_html__( 'Online', 'fullworks-active-users-monitor' );
+			$display_time = esc_html__( 'Online now', 'fullworks-active-users-monitor' );
+		} else {
+			$status_class = 'offline';
+			$status_icon  = '&#x25CB;'; // Hollow circle.
+			$status_text  = esc_html__( 'Offline', 'fullworks-active-users-monitor' );
+			$display_time = $this->user_tracker->get_formatted_last_seen( $user_id );
+		}
 
 		$output = sprintf(
 			'<span class="fwaum-status-indicator fwaum-status-%1$s" data-user-id="%2$d">
@@ -116,13 +142,14 @@ class Users_List {
 			esc_html( $status_text )
 		);
 
-		if ( $show_last_seen && ! $is_online ) {
+		if ( $show_last_seen && ! ( 'active' === $status_class || 'online' === $status_class ) ) {
 			$output .= sprintf(
 				'<span class="fwaum-last-seen" title="%1$s">%2$s</span>',
-				esc_attr( $last_seen ),
-				esc_html( $last_seen )
+				esc_attr( $display_time ),
+				esc_html( $display_time )
 			);
 		}
+
 
 		$output .= '</span>';
 
@@ -246,6 +273,11 @@ class Users_List {
 			return;
 		}
 
+		// Prevent infinite recursion: get_online_users() calls get_users() which triggers pre_get_users.
+		if ( $this->is_filtering ) {
+			return;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for query filtering
 		if ( ! isset( $_GET['fwaum_filter'] ) || empty( $_GET['fwaum_filter'] ) ) {
 			return;
@@ -253,6 +285,9 @@ class Users_List {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for query filtering
 		$filter = sanitize_text_field( wp_unslash( $_GET['fwaum_filter'] ) );
+
+		// Set flag to prevent recursion.
+		$this->is_filtering = true;
 
 		if ( 'online' === $filter ) {
 			$online_users = $this->user_tracker->get_online_users();
@@ -272,6 +307,9 @@ class Users_List {
 				$query->set( 'exclude', $online_users );
 			}
 		}
+
+		// Reset flag.
+		$this->is_filtering = false;
 	}
 
 	/**
@@ -284,8 +322,22 @@ class Users_List {
 			return;
 		}
 
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
 		$online_count   = $this->user_tracker->get_online_user_count();
 		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
+
+		$active_count = 0;
+		if ( $enable_true_activity ) {
+			// Recalculate active users based on true activity.
+			$all_users = get_users( array( 'fields' => 'ID', 'number' => 1000 ) );
+			foreach ( $all_users as $user_id ) {
+				if ( $this->user_tracker->is_user_truly_active( $user_id ) ) {
+					$active_count++;
+				}
+			}
+		}
 
 		// Build role summary.
 		$role_summary = array();
@@ -308,6 +360,10 @@ class Users_List {
 					<?php
 					/* translators: %d: Total online users */
 					printf( esc_html__( '%d users online', 'fullworks-active-users-monitor' ), esc_html( $online_count ) );
+					if ( $enable_true_activity ) {
+						/* translators: %d: Total active users */
+						printf( esc_html__( ' (%d active)', 'fullworks-active-users-monitor' ), esc_html( $active_count ) );
+					}
 					if ( ! empty( $role_summary ) ) {
 						echo ' (' . esc_html( $summary_text ) . ')';
 					}
@@ -363,26 +419,48 @@ class Users_List {
 			true
 		);
 
-		// Collect online users data for JavaScript.
-		$online_users      = $this->user_tracker->get_online_users();
-		$online_users_data = array();
-		foreach ( $online_users as $user_id ) {
-			$user = get_userdata( $user_id );
+		// Localize script with data.
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
+		// Get all user IDs on the current page.
+		global $wp_list_table;
+		$current_page_user_ids = array();
+		if ( $wp_list_table && $wp_list_table->items ) {
+			foreach ( $wp_list_table->items as $user_object ) {
+				$current_page_user_ids[] = $user_object->ID;
+			}
+		}
+
+		$all_users_status_data = array();
+		foreach ( $current_page_user_ids as $user_id ) {
+			$is_online       = $this->user_tracker->is_user_online( $user_id );
+			$is_truly_active = $this->user_tracker->is_user_truly_active( $user_id );
+			$user            = get_userdata( $user_id );
 			if ( $user ) {
-				$online_users_data[] = array(
-					'user_id'    => $user_id,
-					'user_role'  => $user->roles[0] ?? 'subscriber',
-					'badge_text' => esc_html__( 'ONLINE', 'fullworks-active-users-monitor' ),
+				$all_users_status_data[] = array(
+					'user_id'           => $user_id,
+					'is_online'         => $is_online,
+					'is_truly_active'   => $is_truly_active,
+					'formatted_last_seen' => $this->user_tracker->get_formatted_last_seen( $user_id ),
+					'user_role'         => $user->roles[0] ?? 'subscriber',
 				);
 			}
 		}
 
-		// Localize script with data.
 		wp_localize_script(
 			'fwaum-users-list',
 			'fwaum_users_list',
 			array(
-				'online_users' => $online_users_data,
+				'all_users_status' => $all_users_status_data,
+				'enable_true_activity' => $enable_true_activity,
+				'strings'          => array(
+					'active'       => esc_html__( 'Active', 'fullworks-active-users-monitor' ),
+					'online'       => esc_html__( 'Online', 'fullworks-active-users-monitor' ),
+					'offline'      => esc_html__( 'Offline', 'fullworks-active-users-monitor' ),
+					'active_now'   => esc_html__( 'Active now', 'fullworks-active-users-monitor' ),
+					'online_now'   => esc_html__( 'Online now', 'fullworks-active-users-monitor' ),
+				),
 			)
 		);
 	}

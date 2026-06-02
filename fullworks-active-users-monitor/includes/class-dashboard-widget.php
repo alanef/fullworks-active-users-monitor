@@ -68,16 +68,32 @@ class Dashboard_Widget {
 		$online_count   = count( $online_users );
 		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
 
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
+		$display_count = $online_count;
+		$display_label = _n( 'User Online', 'Users Online', $online_count, 'fullworks-active-users-monitor' );
+		$display_users = $online_users; // Default to online users.
+
+		if ( $enable_true_activity ) {
+			$active_users = array();
+			foreach ( $online_users as $user_id ) {
+				if ( $this->user_tracker->is_user_truly_active( $user_id ) ) {
+					$active_users[] = $user_id;
+				}
+			}
+			$display_count = count( $active_users );
+			$display_label = _n( 'Active User Online', 'Active Users Online', $display_count, 'fullworks-active-users-monitor' );
+			$display_users = $active_users; // Prioritize active users for the "Recently Active" list.
+		}
+
 		?>
 		<div class="fwaum-dashboard-widget">
 			<div class="fwaum-dashboard-summary">
 				<div class="fwaum-total-online">
-					<span class="fwaum-big-number"><?php echo esc_html( $online_count ); ?></span>
+					<span class="fwaum-big-number"><?php echo esc_html( $display_count ); ?></span>
 					<span class="fwaum-label">
-						<?php
-						/* translators: %d: Number of users */
-						echo esc_html( _n( 'User Online', 'Users Online', $online_count, 'fullworks-active-users-monitor' ) );
-						?>
+						<?php echo esc_html( $display_label ); ?>
 					</span>
 				</div>
 			</div>
@@ -119,13 +135,13 @@ class Dashboard_Widget {
 				</div>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $online_users ) ) : ?>
+			<?php if ( ! empty( $display_users ) ) : ?>
 				<div class="fwaum-recent-users">
 					<h4><?php esc_html_e( 'Recently Active', 'fullworks-active-users-monitor' ); ?></h4>
 					<ul class="fwaum-user-list">
 						<?php
-						// Show up to 5 most recent online users.
-						$display_users = array_slice( $online_users, 0, 5 );
+						// Show up to 5 most recent online/active users.
+						$display_users = array_slice( $display_users, 0, 5 );
 						foreach ( $display_users as $user_id ) :
 							$user = get_userdata( $user_id );
 							if ( ! $user ) {
@@ -207,13 +223,22 @@ class Dashboard_Widget {
 		);
 
 		// Localize script with data.
-		$settings = get_option( 'fwaum_settings', array() );
+		$settings             = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $settings['fwaum_enable_true_activity'] ) ? $settings['fwaum_enable_true_activity'] : false;
+
 		wp_localize_script(
 			'fwaum-dashboard-widget',
 			'fwaum_dashboard',
 			array(
-				'nonce'            => wp_create_nonce( 'fwaum_ajax_nonce' ),
-				'refresh_interval' => isset( $settings['refresh_interval'] ) ? $settings['refresh_interval'] : 30,
+				'nonce'                => wp_create_nonce( 'fwaum_ajax_nonce' ),
+				'refresh_interval'     => isset( $settings['refresh_interval'] ) ? $settings['refresh_interval'] : 30,
+				'enable_true_activity' => $enable_true_activity,
+				'strings'              => array(
+					'activeUsersOnline' => _n( 'Active User Online', 'Active Users Online', 1, 'fullworks-active-users-monitor' ),
+					'usersOnline'       => _n( 'User Online', 'Users Online', 1, 'fullworks-active-users-monitor' ),
+					'activeNow'         => esc_html__( 'Active now', 'fullworks-active-users-monitor' ),
+					'onlineNow'         => esc_html__( 'Online now', 'fullworks-active-users-monitor' ),
+				),
 			)
 		);
 	}

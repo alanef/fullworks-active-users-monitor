@@ -167,6 +167,8 @@ class Plugin {
 		// Register hooks.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_admin_bar_assets' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_true_activity_heartbeat_script' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_true_activity_heartbeat_script' ) );
 		add_filter( 'plugin_action_links_' . FWAUM_PLUGIN_BASENAME, array( $this, 'add_settings_link' ) );
 
 		// Register WP-CLI command if available.
@@ -269,6 +271,36 @@ class Plugin {
 		);
 		array_unshift( $links, $settings_link );
 		return $links;
+	}
+
+	/**
+	 * Enqueue true activity heartbeat script
+	 */
+	public function enqueue_true_activity_heartbeat_script() {
+		$options = get_option( 'fwaum_settings', array() );
+
+		// Only enqueue if true activity is enabled and user is logged in.
+		if ( ! empty( $options['fwaum_enable_true_activity'] ) && is_user_logged_in() ) {
+			wp_enqueue_script(
+				'fwaum-true-activity-heartbeat',
+				FWAUM_PLUGIN_URL . 'assets/js/true-activity-heartbeat.js',
+				array( 'jquery' ),
+				FWAUM_VERSION,
+				true
+			);
+
+			$heartbeat_frequency = isset( $options['fwaum_heartbeat_frequency'] ) ? absint( $options['fwaum_heartbeat_frequency'] ) : 60;
+
+			wp_localize_script(
+				'fwaum-true-activity-heartbeat',
+				'fwaumHeartbeat',
+				array(
+					'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+					'nonce'           => wp_create_nonce( 'fwaum_heartbeat_nonce' ),
+					'heartbeatFrequency' => $heartbeat_frequency,
+				)
+			);
+		}
 	}
 }
 

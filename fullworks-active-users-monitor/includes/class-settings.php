@@ -119,6 +119,51 @@ class Settings {
 			)
 		);
 
+		// True activity tracking setting.
+		add_settings_field(
+			'fwaum_enable_true_activity',
+			esc_html__( 'Enable True Activity Tracking', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_checkbox_field' ),
+			'fwaum-settings',
+			'fwaum_general_section',
+			array(
+				'field' => 'fwaum_enable_true_activity',
+				'label' => esc_html__( 'Enable more accurate user activity tracking (heartbeat)', 'fullworks-active-users-monitor' ),
+			)
+		);
+
+		// True activity threshold setting.
+		add_settings_field(
+			'fwaum_true_activity_threshold',
+			esc_html__( 'True Activity Threshold', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_number_field' ),
+			'fwaum-settings',
+			'fwaum_general_section',
+			array(
+				'field' => 'fwaum_true_activity_threshold',
+				'label' => esc_html__( 'minutes (1-60). Users inactive for longer are "Online" but not "Active".', 'fullworks-active-users-monitor' ),
+				'min'   => 1,
+				'max'   => 60,
+				'step'  => 1,
+			)
+		);
+
+		// Heartbeat frequency setting.
+		add_settings_field(
+			'fwaum_heartbeat_frequency',
+			esc_html__( 'Heartbeat Frequency', 'fullworks-active-users-monitor' ),
+			array( $this, 'render_number_field' ),
+			'fwaum-settings',
+			'fwaum_general_section',
+			array(
+				'field' => 'fwaum_heartbeat_frequency',
+				'label' => esc_html__( 'seconds (10-300). How often the browser sends activity pings.', 'fullworks-active-users-monitor' ),
+				'min'   => 10,
+				'max'   => 300,
+				'step'  => 5,
+			)
+		);
+
 		// Display Settings Section.
 		add_settings_section(
 			'fwaum_display_section',
@@ -258,6 +303,9 @@ class Settings {
 			'enable_admin_bar'          => true,
 			'refresh_interval'          => 30,
 			'enable_dashboard'          => true,
+			'fwaum_enable_true_activity' => false,
+			'fwaum_true_activity_threshold' => 5,
+			'fwaum_heartbeat_frequency'     => 60,
 			'show_last_seen'            => true,
 			'enable_animations'         => true,
 			'view_roles'                => array( 'administrator' ),
@@ -280,6 +328,7 @@ class Settings {
 		// Checkboxes.
 		$sanitized['enable_admin_bar']          = ! empty( $input['enable_admin_bar'] );
 		$sanitized['enable_dashboard']          = ! empty( $input['enable_dashboard'] );
+		$sanitized['fwaum_enable_true_activity'] = ! empty( $input['fwaum_enable_true_activity'] );
 		$sanitized['show_last_seen']            = ! empty( $input['show_last_seen'] );
 		$sanitized['enable_animations']         = ! empty( $input['enable_animations'] );
 		$sanitized['enable_audit_log']          = ! empty( $input['enable_audit_log'] );
@@ -288,6 +337,12 @@ class Settings {
 		// Numbers.
 		$sanitized['refresh_interval'] = isset( $input['refresh_interval'] ) ? absint( $input['refresh_interval'] ) : 30;
 		$sanitized['refresh_interval'] = max( 15, min( 300, $sanitized['refresh_interval'] ) );
+
+		$sanitized['fwaum_true_activity_threshold'] = isset( $input['fwaum_true_activity_threshold'] ) ? absint( $input['fwaum_true_activity_threshold'] ) : 5;
+		$sanitized['fwaum_true_activity_threshold'] = max( 1, min( 60, $sanitized['fwaum_true_activity_threshold'] ) );
+
+		$sanitized['fwaum_heartbeat_frequency'] = isset( $input['fwaum_heartbeat_frequency'] ) ? absint( $input['fwaum_heartbeat_frequency'] ) : 60;
+		$sanitized['fwaum_heartbeat_frequency'] = max( 10, min( 300, $sanitized['fwaum_heartbeat_frequency'] ) );
 
 		$sanitized['audit_retention_days']     = isset( $input['audit_retention_days'] ) ? absint( $input['audit_retention_days'] ) : 90;
 		$sanitized['audit_anonymize_ips_days'] = isset( $input['audit_anonymize_ips_days'] ) ? absint( $input['audit_anonymize_ips_days'] ) : 30;

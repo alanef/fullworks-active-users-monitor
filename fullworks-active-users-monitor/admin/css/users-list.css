@@ -41,7 +41,11 @@
 }
 
 .fwaum-status-online .fwaum-status-dot {
-	color: #4caf50;
+	color: #ffc107; /* Yellow for online but idle */
+}
+
+.fwaum-status-active .fwaum-status-dot {
+	color: #4caf50; /* Green for truly active */
 }
 
 .fwaum-status-offline .fwaum-status-dot {

@@ -200,6 +200,10 @@ class User_Tracker {
 			return esc_html__( 'Never', 'fullworks-active-users-monitor' );
 		}
 
+		if ( $this->is_user_truly_active( $user_id ) ) {
+			return esc_html__( 'Active now', 'fullworks-active-users-monitor' );
+		}
+
 		if ( $this->is_user_online( $user_id ) ) {
 			return esc_html__( 'Online now', 'fullworks-active-users-monitor' );
 		}
@@ -226,6 +230,43 @@ class User_Tracker {
 	}
 
 	/**
+	 * Get last activity time for a user
+	 *
+	 * @param int $user_id User ID.
+	 * @return int|false Last activity timestamp or false if not available.
+	 */
+	public function get_user_last_activity( $user_id ) {
+		return get_user_meta( $user_id, 'fwaum_last_activity_timestamp', true );
+	}
+
+	/**
+	 * Check if a user is truly active (based on heartbeat)
+	 *
+	 * @param int $user_id User ID to check.
+	 * @return bool True if user is truly active, false otherwise.
+	 */
+	public function is_user_truly_active( $user_id ) {
+		$options = get_option( 'fwaum_settings', array() );
+
+		// If true activity tracking is not enabled, rely on session-based online status.
+		if ( empty( $options['fwaum_enable_true_activity'] ) ) {
+			return $this->is_user_online( $user_id );
+		}
+
+		$last_activity = $this->get_user_last_activity( $user_id );
+		if ( empty( $last_activity ) ) {
+			return false;
+		}
+		$last_activity = (int) $last_activity;
+
+		$threshold_minutes = isset( $options['fwaum_true_activity_threshold'] ) ? absint( $options['fwaum_true_activity_threshold'] ) : 5;
+		$threshold_seconds = $threshold_minutes * MINUTE_IN_SECONDS;
+
+		// User is considered truly active if their last activity was within the threshold.
+		return ( time() - $last_activity ) < $threshold_seconds;
+	}
+
+	/**
 	 * Clear cache
 	 */
 	public function clear_cache() {
@@ -240,6 +281,7 @@ class User_Tracker {
 	 */
 	public function track_login( $user_login, $user ) {
 		update_user_meta( $user->ID, 'fwaum_last_login', time() );
+		update_user_meta( $user->ID, 'fwaum_last_activity_timestamp', time() );
 		$this->clear_cache();
 	}
 

@@ -55,14 +55,34 @@ class Admin_Bar {
 		}
 
 		// Get online users count.
-		$online_count   = $this->user_tracker->get_online_user_count();
+		$online_users   = $this->user_tracker->get_online_users();
+		$online_count   = count( $online_users );
 		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
+
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
+		$display_count = $online_count;
+		$display_label = esc_html__( 'Users Online', 'fullworks-active-users-monitor' );
+		$filter_param  = 'online';
+
+		if ( $enable_true_activity ) {
+			$active_users = array();
+			foreach ( $online_users as $user_id ) {
+				if ( $this->user_tracker->is_user_truly_active( $user_id ) ) {
+					$active_users[] = $user_id;
+				}
+			}
+			$display_count = count( $active_users );
+			$display_label = esc_html__( 'Active Users', 'fullworks-active-users-monitor' );
+			$filter_param  = 'active'; // A new filter 'active' could be used, or just 'online'. Let's stick with 'online' for now for simplicity in user list filtering.
+		}
 
 		// Build the title.
 		$title = sprintf(
 			'<span class="fwaum-admin-bar-icon">👥</span> <span class="fwaum-admin-bar-text">%s: <span class="fwaum-online-count">%d</span></span>',
-			esc_html__( 'Users Online', 'fullworks-active-users-monitor' ),
-			$online_count
+			$display_label,
+			$display_count
 		);
 
 		// Add main node.
@@ -70,7 +90,7 @@ class Admin_Bar {
 			array(
 				'id'    => 'fwaum-online-users',
 				'title' => $title,
-				'href'  => admin_url( 'users.php?fwaum_filter=online' ),
+				'href'  => admin_url( 'users.php?fwaum_filter=' . $filter_param ),
 				'meta'  => array(
 					'class' => 'fwaum-admin-bar-item',
 					'title' => esc_html__( 'View online users', 'fullworks-active-users-monitor' ),
@@ -182,8 +202,21 @@ class Admin_Bar {
 
 		// Get fresh data.
 		$this->user_tracker->clear_cache();
-		$online_count   = $this->user_tracker->get_online_user_count( false );
+		$online_users   = $this->user_tracker->get_online_users( false );
+		$online_count   = count( $online_users );
 		$counts_by_role = $this->user_tracker->get_online_counts_by_role( false );
+
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
+		$active_count = 0;
+		if ( $enable_true_activity ) {
+			foreach ( $online_users as $user_id ) {
+				if ( $this->user_tracker->is_user_truly_active( $user_id ) ) {
+					$active_count++;
+				}
+			}
+		}
 
 		// Format role data.
 		$role_data = array();
@@ -199,10 +232,12 @@ class Admin_Bar {
 
 		wp_send_json_success(
 			array(
-				'total'      => $online_count,
-				'roles'      => $role_data,
+				'total'        => $online_count,
+				'active_total' => $active_count,
+				'roles'        => $role_data,
+				'enable_true_activity' => $enable_true_activity,
 				// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- Using timestamp format for JavaScript Date() compatibility in AJAX response. Site timezone needed for accurate "last updated" display.
-				'updated_at' => current_time( 'timestamp' ),
+				'updated_at'   => current_time( 'timestamp' ),
 			)
 		);
 	}

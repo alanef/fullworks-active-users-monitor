@@ -19,16 +19,11 @@
     
     <coverage>
         <include>
-            <directory suffix=".php">../fullworks-active-users-monitor</directory>
+            <directory suffix=".php">..</directory>
         </include>
         <exclude>
-            <directory>../fullworks-active-users-monitor/vendor</directory>
-            <directory>../fullworks-active-users-monitor/tests</directory>
-            <directory>../fullworks-active-users-monitor/node_modules</directory>
+            <directory>../includes/vendor</directory>
+            <directory>../tests</directory>
         </exclude>
     </coverage>
-    
-    <php>
-        <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="vendor/yoast/phpunit-polyfills"/>
-    </php>
 </phpunit>

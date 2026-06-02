@@ -9,14 +9,20 @@
 	var refreshInterval = null;
 	var isUpdating = false;
 
+	// Access localized data globally within the script's scope.
+	const fwaumAjaxData = typeof fwaumAjax !== 'undefined' ? fwaumAjax : {};
+	const enableTrueActivity = fwaumAjaxData.enable_true_activity || false;
+	const strings = fwaumAjaxData.strings || {};
+
 	/**
 	 * Initialize on document ready
 	 */
 	$(document).ready(function() {
 		console.debug('[FWAUM] Initializing Active Users Monitor');
-		console.debug('[FWAUM] Ajax URL:', fwaumAjax.ajaxUrl);
-		console.debug('[FWAUM] Refresh Interval:', fwaumAjax.refreshInterval);
-		console.debug('[FWAUM] Nonce:', fwaumAjax.nonce);
+		console.debug('[FWAUM] Ajax URL:', fwaumAjaxData.ajaxUrl);
+		console.debug('[FWAUM] Refresh Interval:', fwaumAjaxData.refreshInterval);
+		console.debug('[FWAUM] Nonce:', fwaumAjaxData.nonce);
+		console.debug('[FWAUM] Enable True Activity:', enableTrueActivity);
 		
 		// Initialize components.
 		initAdminBar();
@@ -24,8 +30,8 @@
 		initDashboard();
 		
 		// Start auto-refresh if configured.
-		if (fwaumAjax.refreshInterval > 0) {
-			console.debug('[FWAUM] Starting auto-refresh with interval:', fwaumAjax.refreshInterval);
+		if (fwaumAjaxData.refreshInterval > 0) {
+			console.debug('[FWAUM] Starting auto-refresh with interval:', fwaumAjaxData.refreshInterval);
 			startAutoRefresh();
 		} else {
 			console.debug('[FWAUM] Auto-refresh disabled (interval is 0 or not set)');
@@ -97,7 +103,7 @@
 			
 			// Always update admin bar if visible.
 			updateAdminBar();
-		}, fwaumAjax.refreshInterval);
+		}, fwaumAjaxData.refreshInterval);
 	}
 
 	/**
@@ -119,9 +125,9 @@
 		$adminBarItem.addClass('fwaum-admin-bar-loading');
 
 		// Make AJAX request.
-		$.post(fwaumAjax.ajaxUrl, {
+		$.post(fwaumAjaxData.ajaxUrl, {
 			action: 'fwaum_update_admin_bar',
-			nonce: fwaumAjax.nonce
+			nonce: fwaumAjaxData.nonce
 		})
 		.done(function(response) {
 			if (response.success) {
@@ -141,12 +147,16 @@
 	 */
 	function updateAdminBarDisplay(data) {
 		var $counter = $('#wp-admin-bar-fwaum-online-users .fwaum-online-count');
-		if (!$counter.length) {
+		var $label = $('#wp-admin-bar-fwaum-online-users .fwaum-admin-bar-text'); // Get the text span.
+
+		if (!$counter.length || !$label.length) {
 			return;
 		}
 
 		var oldCount = parseInt($counter.text());
-		var newCount = data.total;
+		var newCount = enableTrueActivity ? data.active_total : data.total;
+		var newLabelText = enableTrueActivity ? (newCount === 1 ? strings.activeUserOnline : strings.activeUsersOnline) : (newCount === 1 ? strings.userOnline : strings.usersOnline);
+
 
 		// Update count with animation if changed.
 		if (oldCount !== newCount) {
@@ -157,6 +167,9 @@
 				$counter.removeClass('fwaum-count-changed');
 			}, 1000);
 		}
+		
+		// Update the entire label text, preserving icon.
+		$label.html(`👥 ${newLabelText}: <span class="fwaum-online-count">${newCount}</span>`);
 
 		// Update role breakdown in dropdown.
 		if (data.roles && data.roles.length > 0) {
@@ -254,40 +267,53 @@
 		var $statusCell = $row.find('.fwaum-status-indicator');
 		var $usernameCell = $row.find('td.username strong');
 
-		if (userData.is_online) {
-			// Update status indicator.
-			$statusCell.removeClass('fwaum-status-offline').addClass('fwaum-status-online');
-			$statusCell.find('.fwaum-status-dot').text('●');
-			$statusCell.find('.fwaum-status-text').text('Online');
-			$statusCell.find('.fwaum-last-seen').remove();
+		let statusClass = 'offline';
+		let statusDot = '&#x25CB;'; // Hollow circle.
+		let statusText = strings.offline;
+		let displayTime = userData.last_seen;
 
-			// Add online styling.
+		if (enableTrueActivity && userData.is_truly_active) {
+			statusClass = 'active';
+			statusDot = '&#x25CF;'; // Solid circle.
+			statusText = strings.active;
+			displayTime = strings.activeNow;
+		} else if (userData.is_online) {
+			statusClass = 'online';
+			statusDot = '&#x25CF;'; // Solid circle.
+			statusText = strings.online;
+			displayTime = strings.onlineNow;
+		}
+
+		// Update status indicator.
+		$statusCell.removeClass('fwaum-status-active fwaum-status-online fwaum-status-offline')
+			.addClass(`fwaum-status-${statusClass}`);
+		$statusCell.find('.fwaum-status-dot').html(statusDot);
+		$statusCell.find('.fwaum-status-text').text(statusText);
+
+		// Update or add last seen.
+		var $lastSeen = $statusCell.find('.fwaum-last-seen');
+		if ($lastSeen.length) {
+			if ('active' === statusClass || 'online' === statusClass) {
+				$lastSeen.hide(); // Hide if active or online.
+			} else {
+				$lastSeen.text(displayTime).show();
+			}
+		} else if (!('active' === statusClass || 'online' === statusClass)) {
+			// Only add if not active/online and not already present.
+			$statusCell.append('<span class="fwaum-last-seen">' + displayTime + '</span>');
+		}
+
+		// Update row and username styling.
+		if ('active' === statusClass || 'online' === statusClass) {
 			$row.addClass('fwaum-row-online');
 			$usernameCell.addClass('fwaum-user-online fwaum-role-' + userData.role);
-
-			// Add online badge if not exists.
-			if (!$usernameCell.find('.fwaum-online-badge').length) {
-				$usernameCell.find('a').after('<span class="fwaum-online-badge">ONLINE</span>');
-			}
 		} else {
-			// Update status indicator.
-			$statusCell.removeClass('fwaum-status-online').addClass('fwaum-status-offline');
-			$statusCell.find('.fwaum-status-dot').text('○');
-			$statusCell.find('.fwaum-status-text').text('Offline');
-
-			// Update or add last seen.
-			var $lastSeen = $statusCell.find('.fwaum-last-seen');
-			if ($lastSeen.length) {
-				$lastSeen.text(userData.last_seen);
-			} else {
-				$statusCell.append('<span class="fwaum-last-seen">' + userData.last_seen + '</span>');
-			}
-
-			// Remove online styling.
 			$row.removeClass('fwaum-row-online');
 			$usernameCell.removeClass('fwaum-user-online fwaum-role-' + userData.role);
-			$usernameCell.find('.fwaum-online-badge').remove();
 		}
+
+		// Remove the old online badge if it exists.
+		$usernameCell.find('.fwaum-online-badge').remove();
 	}
 
 	/**
@@ -304,13 +330,26 @@
 		if (data.role_counts) {
 			for (var role in data.role_counts) {
 				if (data.role_counts[role] > 0) {
-					roleSummary.push(data.role_counts[role] + ' ' + role);
+					// Assuming role.name is already translated for display.
+					let roleName = role.charAt(0).toUpperCase() + role.slice(1); 
+					// Find the matching name from localized roles if available, fallback to basic capitalization
+					const foundRole = fwaum_users_list.role_strings ? fwaum_users_list.role_strings.find(r => r.role === role) : null;
+					if (foundRole) {
+						roleName = foundRole.name;
+					}
+					roleSummary.push(data.role_counts[role] + ' ' + roleName);
 				}
 			}
 		}
 
 		// Update summary text.
-		var summaryText = data.total_online + ' users online';
+		let summaryText = '';
+		if (enableTrueActivity) {
+			summaryText = `${data.total_online} users online (${data.active_total} active)`;
+		} else {
+			summaryText = `${data.total_online} users online`;
+		}
+		
 		if (roleSummary.length > 0) {
 			summaryText += ' (' + roleSummary.join(', ') + ')';
 		}
@@ -327,7 +366,8 @@
 		// Update Online filter count.
 		var $onlineFilter = $('.subsubsub a[href*="fwaum_filter=online"] .count');
 		if ($onlineFilter.length) {
-			$onlineFilter.text('(' + data.total_online + ')');
+			let onlineCountToDisplay = enableTrueActivity ? data.active_total : data.total_online;
+			$onlineFilter.text('(' + onlineCountToDisplay + ')');
 			console.debug('[FWAUM] Updated online filter count');
 		}
 		

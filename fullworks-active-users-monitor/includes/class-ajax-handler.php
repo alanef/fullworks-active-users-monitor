@@ -37,6 +37,7 @@ class Ajax_Handler {
 		add_action( 'wp_ajax_fwaum_get_online_users', array( $this, 'get_online_users' ) );
 		add_action( 'wp_ajax_fwaum_refresh_users_list', array( $this, 'refresh_users_list' ) );
 		add_action( 'wp_ajax_fwaum_get_user_status', array( $this, 'get_user_status' ) );
+		add_action( 'wp_ajax_fwaum_true_activity_heartbeat', array( $this, 'handle_true_activity_heartbeat' ) );
 	}
 
 	/**
@@ -57,9 +58,23 @@ class Ajax_Handler {
 		$this->user_tracker->clear_cache();
 
 		// Get online users.
-		$online_users   = $this->user_tracker->get_online_users( false );
 		$online_count   = count( $online_users );
 		$counts_by_role = $this->user_tracker->get_online_counts_by_role( false );
+
+		$options              = get_option( 'fwaum_settings', array() );
+		$enable_true_activity = isset( $options['fwaum_enable_true_activity'] ) ? $options['fwaum_enable_true_activity'] : false;
+
+		$active_users = array();
+		$active_count = 0;
+
+		if ( $enable_true_activity ) {
+			foreach ( $online_users as $user_id ) {
+				if ( $this->user_tracker->is_user_truly_active( $user_id ) ) {
+					$active_users[] = $user_id;
+				}
+			}
+			$active_count = count( $active_users );
+		}
 
 		// Get user details.
 		$users_data = array();
@@ -75,6 +90,7 @@ class Ajax_Handler {
 					'avatar_url'   => get_avatar_url( $user_id, array( 'size' => 32 ) ),
 					'profile_url'  => get_edit_user_link( $user_id ),
 					'last_seen'    => $this->user_tracker->get_formatted_last_seen( $user_id ),
+					'is_truly_active' => $enable_true_activity ? $this->user_tracker->is_user_truly_active( $user_id ) : false,
 				);
 			}
 		}
@@ -92,11 +108,14 @@ class Ajax_Handler {
 
 		wp_send_json_success(
 			array(
-				'total'       => $online_count,
-				'users'       => $users_data,
-				'role_counts' => $role_counts,
+				'total'        => $online_count,
+				'active_total' => $active_count,
+				'users'        => $users_data,
+				'active_users' => $active_users,
+				'role_counts'  => $role_counts,
+				'enable_true_activity' => $enable_true_activity,
 				// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- Using timestamp format for JavaScript Date() compatibility in AJAX response. Site timezone needed for accurate "last updated" display.
-				'timestamp'   => current_time( 'timestamp' ),
+				'timestamp'    => current_time( 'timestamp' ),
 			)
 		);
 	}
@@ -231,5 +250,27 @@ class Ajax_Handler {
 				'timestamp'    => current_time( 'timestamp' ),
 			)
 		);
+	}
+
+	/**
+	 * Handle true activity heartbeat via AJAX
+	 */
+	public function handle_true_activity_heartbeat() {
+		// Verify nonce.
+		if ( ! check_ajax_referer( 'fwaum_heartbeat_nonce', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token', 'fullworks-active-users-monitor' ) );
+		}
+
+		// Check if user is logged in.
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( __( 'User not logged in', 'fullworks-active-users-monitor' ) );
+		}
+
+		$current_user_id = get_current_user_id();
+
+		// Update last activity timestamp.
+		update_user_meta( $current_user_id, 'fwaum_last_activity_timestamp', time() );
+
+		wp_send_json_success();
 	}
 }
