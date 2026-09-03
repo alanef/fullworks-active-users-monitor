@@ -29,7 +29,6 @@ fullworks-active-users-monitor/
 │   ├── uninstall.php            # Cleanup on uninstall
 │   └── .distignore              # Build exclusions
 ├── tests/                        # PHPUnit tests
-├── bin/                          # Build and setup scripts
 ├── .wp-env.json                  # Local development config
 ├── composer.json                 # PHP dependencies
 ├── package.json                  # Node dependencies
@@ -108,7 +107,6 @@ Contributions are welcome! We have several open issues tagged as "help wanted" t
 ### Key Files for Contributors
 
 - [CLAUDE.md](CLAUDE.md) - AI assistant instructions and project guidelines
-- [AI-WORDPRESS-PLUGIN-PROMPT.md](AI-WORDPRESS-PLUGIN-PROMPT.md) - WordPress.org compliance requirements
 - [Plugin Readme](fullworks-active-users-monitor/readme.txt) - User-facing documentation
 
 ## Resources
