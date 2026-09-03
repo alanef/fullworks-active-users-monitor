@@ -15,7 +15,7 @@ hand-edit the managed files listed there.
 | Main file | `fullworks-active-users-monitor/fullworks-active-users-monitor.php` |
 | Default branch | `main` |
 | WordPress.org slug | `fullworks-active-users-monitor` |
-| wp-env ports | dev `8740`, tests `8741` |
+| wp-env ports | dev `8790`, tests `8791` |
 | Version locations | plugin header `Version:`, `readme.txt` `Stable tag:` and `FWAUM_VERSION` in the main file |
 
 CI fails when the version locations disagree.
@@ -25,7 +25,7 @@ CI fails when the version locations disagree.
 ```bash
 composer install && npm install   # first time
 composer run check                # PHPCompatibility + WordPress security sniffs
-npm run start                     # wp-env (dev :8740, tests :8741, admin/password)
+npm run start                     # wp-env (dev :8790, tests :8791, admin/password)
 npm test                          # PHPUnit inside the wp-env tests container
 npm test -- --filter Foo          # pass PHPUnit args through
 composer run build                # zipped/fullworks-active-users-monitor-free.zip via wp dist-archive

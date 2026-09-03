@@ -139,7 +139,7 @@ This repository uses the standard Fullworks free-plugin tooling, documented in
 fullworks-active-users-monitor/                     # repository root: development tooling
 ├── .github/workflows/             # checks.yml on push/PR, release.yml on tag
 ├── tests/                         # PHPUnit suite, run inside wp-env
-├── .wp-env.json                   # dev :8740, tests :8741
+├── .wp-env.json                   # dev :8790, tests :8791
 ├── composer.json                  # dev dependencies and quality scripts
 ├── package.json                   # wp-env and test scripts
 ├── phpunit.xml.dist / run-tests.sh
@@ -148,7 +148,7 @@ fullworks-active-users-monitor/                     # repository root: developme
 
 ```bash
 composer install && npm install        # dev tools
-npm run start                          # http://localhost:8740  (admin / password)
+npm run start                          # http://localhost:8790  (admin / password)
 composer run check                     # PHPCompatibility + security sniffs
 npm test                               # PHPUnit in the wp-env tests container
 composer run build                     # zipped/fullworks-active-users-monitor-free.zip
