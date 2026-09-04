@@ -9,6 +9,7 @@ tmp-build/
 node_modules/
 /vendor/
 /fullworks-active-users-monitor/vendor/
+/fullworks-active-users-monitor/composer.lock
 /fullworks-active-users-monitor/includes/vendor/
 .phpunit.result.cache
 *.phpunit.result.cache
