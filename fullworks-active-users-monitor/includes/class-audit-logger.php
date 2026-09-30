@@ -31,6 +31,7 @@ class Audit_Logger {
 	public function __construct() {
 		// Hook into WordPress authentication events.
 		add_action( 'wp_login', array( $this, 'log_login' ), 10, 2 );
+		add_action( 'two_factor_user_authenticated', array( $this, 'log_two_factor_login' ) );
 		add_action( 'wp_logout', array( $this, 'log_logout' ) );
 		add_action( 'wp_login_failed', array( $this, 'log_failed_login' ) );
 		add_action( 'auth_cookie_expired', array( $this, 'log_session_expired' ) );
@@ -46,13 +47,41 @@ class Audit_Logger {
 	 * @param WP_User $user WP_User object.
 	 */
 	public function log_login( $user_login, $user ) {
+		// With the Two Factor plugin, wp_login only marks the password step for users who
+		// have 2FA enabled: that session is discarded and the login completes, or not, on
+		// the second factor. Log it when two_factor_user_authenticated fires instead.
+		if ( class_exists( 'Two_Factor_Core' ) && \Two_Factor_Core::is_user_using_two_factor( $user->ID ) ) {
+			return;
+		}
+
+		$this->record_login( $user, $this->detect_login_method() );
+	}
+
+	/**
+	 * Log a login completed through the Two Factor plugin.
+	 *
+	 * @param \WP_User $user The authenticated user.
+	 */
+	public function log_two_factor_login( $user ) {
+		if ( $user instanceof \WP_User ) {
+			$this->record_login( $user, 'two_factor' );
+		}
+	}
+
+	/**
+	 * Record a completed login and remember when the session started.
+	 *
+	 * @param \WP_User $user         The user who logged in.
+	 * @param string   $login_method Login method.
+	 */
+	private function record_login( $user, $login_method ) {
 		$this->log_event(
 			$user->ID,
-			$user_login,
+			$user->user_login,
 			$user->display_name,
 			'login',
 			array(
-				'login_method' => $this->detect_login_method(),
+				'login_method' => $login_method,
 			)
 		);
 
@@ -310,11 +339,6 @@ class Audit_Logger {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing -- Just detecting login method.
 		if ( isset( $_GET['loginSocial'] ) || isset( $_POST['loginSocial'] ) ) {
 			return 'social';
-		}
-
-		// Check for two-factor authentication.
-		if ( class_exists( 'Two_Factor_Core' ) ) {
-			return 'two_factor';
 		}
 
 		return 'standard';

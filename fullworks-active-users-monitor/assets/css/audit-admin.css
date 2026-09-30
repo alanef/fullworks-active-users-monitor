@@ -354,3 +354,27 @@
 	border-color: #ffeeba;
 	color: #856404;
 }
+
+/* Quick date filter buttons and clickable rows (added by audit-admin.js). */
+.fwaum-quick-dates {
+	margin-top: 5px;
+}
+
+.fwaum-quick-dates .button-small {
+	margin-right: 5px;
+	margin-bottom: 2px;
+	font-size: 11px;
+	padding: 2px 6px;
+}
+
+.fwaum-row-hover {
+	background-color: #f0f0f1 !important;
+}
+
+.wp-list-table tbody tr {
+	cursor: pointer;
+}
+
+.wp-list-table tbody tr td input[type="checkbox"] {
+	cursor: default;
+}

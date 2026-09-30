@@ -131,6 +131,17 @@ class User_Tracker {
 	}
 
 	/**
+	 * Get a role's translated display name, e.g. "Administrator" for "administrator".
+	 *
+	 * @param string $role Role slug.
+	 * @return string
+	 */
+	public static function get_role_label( $role ) {
+		$names = wp_roles()->role_names;
+		return isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : ucfirst( $role );
+	}
+
+	/**
 	 * Check whether the current user may see who is online.
 	 *
 	 * Administrators always can; otherwise the user needs one of the roles

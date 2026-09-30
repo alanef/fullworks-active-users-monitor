@@ -10,6 +10,30 @@ use FullworksActiveUsersMonitor\Includes\Audit_Logger;
 use FullworksActiveUsersMonitor\Includes\Privacy;
 use FullworksActiveUsersMonitor\Includes\User_Tracker;
 
+if ( ! class_exists( 'Two_Factor_Core' ) ) {
+	/**
+	 * Minimal stand-in for the Two Factor plugin's core class.
+	 */
+	class Two_Factor_Core { // phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound
+		/**
+		 * IDs of users treated as having two-factor enabled.
+		 *
+		 * @var int[]
+		 */
+		public static $users = array();
+
+		/**
+		 * Whether the user has two-factor enabled.
+		 *
+		 * @param int $user_id User ID.
+		 * @return bool
+		 */
+		public static function is_user_using_two_factor( $user_id ) {
+			return in_array( $user_id, self::$users, true );
+		}
+	}
+}
+
 /**
  * Plugin behaviour tests.
  */
@@ -223,6 +247,37 @@ class Test_Plugin extends WP_UnitTestCase {
 		$this->assertSame( "'=HYPERLINK(\"http://x\")", $method->invoke( $exporter, '=HYPERLINK("http://x")' ) );
 		$this->assertSame( "'@SUM(1)", $method->invoke( $exporter, '@SUM(1)' ) );
 		$this->assertSame( 'alice', $method->invoke( $exporter, 'alice' ) );
+	}
+
+	/**
+	 * With Two Factor active, a 2FA user's password step is not a login; completing
+	 * the second factor is, and users without 2FA are not tagged two_factor.
+	 */
+	public function test_two_factor_logins() {
+		global $wpdb;
+		$with_2fa    = get_userdata( self::factory()->user->create() );
+		$without_2fa = get_userdata( self::factory()->user->create() );
+
+		Two_Factor_Core::$users = array( $with_2fa->ID );
+
+		do_action( 'wp_login', $with_2fa->user_login, $with_2fa );
+		$this->assertSame( 0, $this->count_events( 'login' ) );
+
+		do_action( 'two_factor_user_authenticated', $with_2fa, null );
+		do_action( 'wp_login', $without_2fa->user_login, $without_2fa );
+
+		$methods = $wpdb->get_col( $wpdb->prepare( 'SELECT login_method FROM %i WHERE event_type = %s ORDER BY id', Audit_Installer::get_table_name(), 'login' ) );
+		$this->assertSame( array( 'two_factor', 'standard' ), $methods );
+
+		Two_Factor_Core::$users = array();
+	}
+
+	/**
+	 * The users list summary pluralises and names roles.
+	 */
+	public function test_summary_text() {
+		$this->assertSame( '1 user online (1 Administrator)', FullworksActiveUsersMonitor\Includes\Users_List::build_summary_text( 1, array( 'administrator' => 1 ) ) );
+		$this->assertSame( '0 users online', FullworksActiveUsersMonitor\Includes\Users_List::build_summary_text( 0, array() ) );
 	}
 
 	/**

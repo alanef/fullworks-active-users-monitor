@@ -161,8 +161,7 @@ class CLI_Command extends \WP_CLI_Command {
 
 		// Add role breakdown.
 		foreach ( $counts_by_role as $role => $count ) {
-			$role_obj  = get_role( $role );
-			$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+			$role_name = User_Tracker::get_role_label( $role );
 			$stats[]   = array(
 				'metric' => $role_name . ' Online',
 				'value'  => $count,
@@ -471,8 +470,7 @@ class CLI_Command extends \WP_CLI_Command {
 			if ( ! empty( $counts_by_role ) ) {
 				\WP_CLI::line( 'By Role:' );
 				foreach ( $counts_by_role as $role => $count ) {
-					$role_obj  = get_role( $role );
-					$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+					$role_name = User_Tracker::get_role_label( $role );
 					\WP_CLI::line( sprintf( '  • %-20s %d', $role_name . ':', $count ) );
 				}
 				\WP_CLI::line( '' );

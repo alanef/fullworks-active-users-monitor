@@ -4,7 +4,7 @@ Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 1.2.0-alpha.1
+Stable tag: 1.2.0-alpha.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html

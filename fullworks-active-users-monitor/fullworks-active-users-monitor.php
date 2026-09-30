@@ -3,7 +3,7 @@
  * Plugin Name:       Fullworks Active Users Monitor
  * Plugin URI:        https://fullworks.net/products/active-users-monitor/
  * Description:       Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities.
- * Version:           1.2.0-alpha.1
+ * Version:           1.2.0-alpha.2
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Fullworks
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants with unique prefix (minimum 4 characters).
-define( 'FWAUM_VERSION', '1.2.0-alpha.1' );
+define( 'FWAUM_VERSION', '1.2.0-alpha.2' );
 define( 'FWAUM_PLUGIN_FILE', __FILE__ );
 define( 'FWAUM_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FWAUM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -233,7 +233,12 @@ class Plugin {
 				'nonce'           => wp_create_nonce( 'fwaum_ajax_nonce' ),
 				'refreshInterval' => $refresh_interval * 1000, // Convert to milliseconds.
 				'strings'         => array(
-					'error' => __( 'An error occurred while updating online users.', 'fullworks-active-users-monitor' ),
+					'error'       => __( 'An error occurred while updating online users.', 'fullworks-active-users-monitor' ),
+					'refreshNow'  => __( 'Refresh Now', 'fullworks-active-users-monitor' ),
+					'refreshing'  => __( 'Refreshing...', 'fullworks-active-users-monitor' ),
+					'online'      => __( 'Online', 'fullworks-active-users-monitor' ),
+					'offline'     => __( 'Offline', 'fullworks-active-users-monitor' ),
+					'onlineBadge' => __( 'ONLINE', 'fullworks-active-users-monitor' ),
 				),
 			)
 		);

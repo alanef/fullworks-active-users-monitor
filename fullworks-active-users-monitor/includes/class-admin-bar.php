@@ -110,8 +110,7 @@ class Admin_Bar {
 			);
 
 			foreach ( $counts_by_role as $role => $count ) {
-				$role_obj  = get_role( $role );
-				$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+				$role_name = User_Tracker::get_role_label( $role );
 
 				$wp_admin_bar->add_node(
 					array(
@@ -192,8 +191,7 @@ class Admin_Bar {
 		// Format role data.
 		$role_data = array();
 		foreach ( $counts_by_role as $role => $count ) {
-			$role_obj    = get_role( $role );
-			$role_name   = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+			$role_name   = User_Tracker::get_role_label( $role );
 			$role_data[] = array(
 				'role'  => $role,
 				'name'  => $role_name,

@@ -78,10 +78,9 @@ class Ajax_Handler {
 		// Format role counts.
 		$role_counts = array();
 		foreach ( $counts_by_role as $role => $count ) {
-			$role_obj      = get_role( $role );
 			$role_counts[] = array(
 				'role'  => $role,
-				'name'  => $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role ),
+				'name'  => User_Tracker::get_role_label( $role ),
 				'count' => $count,
 			);
 		}
@@ -176,6 +175,7 @@ class Ajax_Handler {
 				'total_offline' => $offline_count,
 				'total_users'   => $total_users,
 				'role_counts'   => $counts_by_role,
+				'summary'       => Users_List::build_summary_text( $online_count, $counts_by_role ),
 				// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- Using timestamp format for JavaScript Date() compatibility in AJAX response. Site timezone needed for accurate "last updated" display.
 				'timestamp'     => current_time( 'timestamp' ),
 			)

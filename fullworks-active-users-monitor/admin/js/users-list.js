@@ -6,7 +6,7 @@ jQuery(document).ready(function($) {
 			var usernameCell = row.find("td.username");
 			if (!usernameCell.find(".fwaum-online-badge").length) {
 				usernameCell.find("strong").addClass("fwaum-user-online fwaum-role-" + userData.user_role);
-				usernameCell.find("strong a").after('<span class="fwaum-online-badge">' + userData.badge_text + '</span>');
+				usernameCell.find("strong a").after($('<span class="fwaum-online-badge">').text(userData.badge_text));
 				row.addClass("fwaum-row-online");
 			}
 		});

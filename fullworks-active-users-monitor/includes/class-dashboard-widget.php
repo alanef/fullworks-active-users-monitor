@@ -106,8 +106,7 @@ class Dashboard_Widget {
 						);
 
 						foreach ( $counts_by_role as $role => $count ) :
-							$role_obj  = get_role( $role );
-							$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+							$role_name = User_Tracker::get_role_label( $role );
 							?>
 							<li class="fwaum-role-item">
 								<span class="fwaum-role-indicator fwaum-role-<?php echo esc_attr( $role ); ?>"></span>
@@ -142,8 +141,7 @@ class Dashboard_Widget {
 										<?php
 										$user_roles = array();
 										foreach ( $user->roles as $role ) {
-											$role_obj     = get_role( $role );
-											$user_roles[] = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+											$user_roles[] = User_Tracker::get_role_label( $role );
 										}
 										echo esc_html( implode( ', ', $user_roles ) );
 										?>
