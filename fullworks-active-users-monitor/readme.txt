@@ -3,11 +3,12 @@ Contributors: fullworks,alanfuller
 Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 6.2
-Tested up to: 6.8
-Stable tag: 1.1.0
+Tested up to: 7.1
+Stable tag: 1.2.0-alpha.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Type: free
 
 Real-time monitoring of logged-in WordPress users with visual indicators, filtering, and comprehensive admin tools.
 
@@ -86,17 +87,23 @@ The plugin provides clear visual feedback for online users:
 
 The plugin uses WordPress's built-in WP_Session_Tokens class to check for active session tokens. This ensures accurate detection regardless of the authentication method used (standard login, SSO, 2FA, etc.).
 
+A user counts as online from the moment they log in until they log out or their session expires. WordPress sessions last 2 days, or 14 days with "Remember Me", so a user who closes the browser without logging out stays online until then.
+
 = Does this plugin create custom database tables? =
 
-Yes, but only if you enable the audit trail feature. The plugin creates one table (wp_fwaum_audit_log) to store login/logout event history. The core monitoring functionality uses WordPress's existing session management system without any custom tables.
+Yes, one table (wp_fwaum_audit_log) for the audit trail, created on activation. Nothing is written to it unless you enable the audit trail. The online-status monitoring uses WordPress's existing session data and needs no custom tables. The table is removed when the plugin is deleted.
 
 = Can I customize which roles can see online status? =
 
-Yes. In the plugin settings, you can configure which user roles have permission to view online user status. By default, only administrators can see this information.
+Yes. In the plugin settings, you can choose which user roles can see online status in the admin bar and dashboard widget. Administrators always can. The status column on the Users page additionally needs the ability to list users. Developers can override the check with the `fwaum_current_user_can_view` filter.
 
 = How often does the plugin update the online status? =
 
 The refresh interval is configurable from 15 to 300 seconds. The default is 30 seconds. You can adjust this in Settings > Active Users Monitor.
+
+= My site is behind a proxy or CDN and the audit log shows the proxy's IP address =
+
+By default only the connecting address (REMOTE_ADDR) is trusted, because headers such as X-Forwarded-For can be forged by anyone. If your site sits behind a proxy you control, list the header it sets with the `fwaum_client_ip_headers` filter, for example `array( 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' )` behind Cloudflare.
 
 = Is this plugin compatible with caching plugins? =
 
@@ -104,7 +111,7 @@ Yes. The plugin uses AJAX for real-time updates, which works independently of pa
 
 = Can I use this with multisite? =
 
-Yes. The plugin is fully compatible with WordPress multisite installations. Super Admins can monitor users across the network.
+Yes. On multisite each site shows its own members who are online, and each site keeps its own audit trail.
 
 = Does it work with custom user roles? =
 
@@ -112,7 +119,7 @@ Yes. The plugin automatically detects and supports all custom user roles in addi
 
 = How can I style the online indicators differently? =
 
-The plugin provides CSS classes for all elements and includes filter hooks for developers to customize the output. You can override styles in your theme's CSS.
+Every element has its own CSS class, so you can override the styles in your theme's CSS.
 
 = Is WP-CLI support included? =
 
@@ -141,7 +148,6 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 * Database migration support for existing user data
 * Updated minimum WordPress version to 6.2 for enhanced security features
 * Fully compliant with WordPress Coding Standards
-* Integration with Fullworks Free Plugin Library for promotional features
 
 = 1.0.1 =
 * Fixed contributor name and donation link
@@ -238,7 +244,13 @@ These commands make it easy to create maintenance scripts that respect user acti
 
 == Privacy Policy ==
 
-This plugin does not collect or store any personal data beyond what WordPress already tracks for logged-in users. It only reads existing session data to determine online status. No data is sent to external services.
+Online status is read from the session data WordPress already keeps. The plugin also stores each user's most recent login time with their account.
+
+When you enable the audit trail, the plugin records logins, logouts, failed login attempts and expired sessions. Each record holds the username and display name, the IP address and browser user agent of the request, the login method and the time. Failed login attempts are recorded with the username that was tried, even when no such account exists.
+
+Records are deleted after the retention period you choose, and IP addresses are anonymized after the period you choose. The plugin adds suggested text to Settings > Privacy and supports WordPress's personal data export and erasure tools.
+
+No data is sent to external services.
 
 == Credits ==
 

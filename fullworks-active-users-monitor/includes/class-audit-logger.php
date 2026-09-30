@@ -35,11 +35,8 @@ class Audit_Logger {
 		add_action( 'wp_login_failed', array( $this, 'log_failed_login' ) );
 		add_action( 'auth_cookie_expired', array( $this, 'log_session_expired' ) );
 
-		// Schedule cleanup cron job.
+		// Daily cleanup; scheduled on activation, cleared on deactivation.
 		add_action( 'fwaum_cleanup_audit_logs', array( $this, 'cleanup_old_logs' ) );
-		if ( ! wp_next_scheduled( 'fwaum_cleanup_audit_logs' ) ) {
-			wp_schedule_event( time(), 'daily', 'fwaum_cleanup_audit_logs' );
-		}
 	}
 
 	/**
@@ -105,6 +102,11 @@ class Audit_Logger {
 	 * @param string $username Username that failed login.
 	 */
 	public function log_failed_login( $username ) {
+		$options = get_option( 'fwaum_settings', array() );
+		if ( isset( $options['audit_track_failed_logins'] ) && ! $options['audit_track_failed_logins'] ) {
+			return;
+		}
+
 		// Get user ID if username exists.
 		$user         = get_user_by( 'login', $username );
 		$user_id      = $user ? $user->ID : 0;
@@ -125,19 +127,30 @@ class Audit_Logger {
 	/**
 	 * Log session expiration
 	 *
-	 * @param string $token The expired token.
+	 * Runs while WordPress is still working out who the current user is, so it
+	 * must never call get_current_user_id() or anything else that triggers that
+	 * lookup: doing so re-validates the same cookie, fires this hook again and
+	 * recurses until the request dies.
+	 *
+	 * @param array $cookie_elements Parsed auth cookie (username, expiration, token, hmac, scheme).
 	 */
-	public function log_session_expired( $token ) {
-		// This is harder to track to a specific user, but we'll do our best.
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
+	public function log_session_expired( $cookie_elements ) {
+		if ( ! is_array( $cookie_elements ) || empty( $cookie_elements['username'] ) || empty( $cookie_elements['token'] ) ) {
 			return;
 		}
 
-		$user = get_userdata( $user_id );
-		if ( ! $user ) {
+		$user = get_user_by( 'login', $cookie_elements['username'] );
+		if ( ! $user || ! $this->is_genuine_cookie( $user, $cookie_elements ) ) {
 			return;
 		}
+
+		// An open browser resends the expired cookie on every request; log it once.
+		$token_hash = hash( 'sha256', $cookie_elements['token'] );
+		$seen_key   = 'fwaum_expired_' . substr( $token_hash, 0, 32 );
+		if ( get_transient( $seen_key ) ) {
+			return;
+		}
+		set_transient( $seen_key, 1, DAY_IN_SECONDS );
 
 		$this->log_event(
 			$user->ID,
@@ -145,9 +158,39 @@ class Audit_Logger {
 			$user->display_name,
 			'session_expired',
 			array(
-				'token_hash' => substr( hash( 'sha256', $token ), 0, 8 ),
+				'token_hash' => substr( $token_hash, 0, 8 ),
 			)
 		);
+	}
+
+	/**
+	 * Check an expired auth cookie was really issued by this site.
+	 *
+	 * WordPress checks expiry before the signature, so the auth_cookie_expired
+	 * hook also fires for forged cookies. This repeats core's HMAC check from
+	 * wp_validate_auth_cookie() so only real sessions are logged.
+	 *
+	 * @param \WP_User $user            User named in the cookie.
+	 * @param array    $cookie_elements Parsed auth cookie.
+	 * @return bool
+	 */
+	private function is_genuine_cookie( $user, $cookie_elements ) {
+		if ( ! isset( $cookie_elements['expiration'], $cookie_elements['hmac'], $cookie_elements['scheme'] ) ) {
+			return false;
+		}
+
+		// Since WordPress 6.8 only phpass and vanilla bcrypt hashes use the old fragment.
+		$pass = $user->user_pass;
+		if ( version_compare( get_bloginfo( 'version' ), '6.8', '<' ) || str_starts_with( $pass, '$P$' ) || str_starts_with( $pass, '$2y$' ) ) {
+			$pass_frag = substr( $pass, 8, 4 );
+		} else {
+			$pass_frag = substr( $pass, -4 );
+		}
+
+		$key  = wp_hash( $cookie_elements['username'] . '|' . $pass_frag . '|' . $cookie_elements['expiration'] . '|' . $cookie_elements['token'], $cookie_elements['scheme'] );
+		$hash = hash_hmac( 'sha256', $cookie_elements['username'] . '|' . $cookie_elements['expiration'] . '|' . $cookie_elements['token'], $key );
+
+		return hash_equals( $hash, $cookie_elements['hmac'] );
 	}
 
 	/**
@@ -176,8 +219,9 @@ class Audit_Logger {
 		// Prepare data for insertion.
 		$data = array(
 			'user_id'          => intval( $user_id ),
-			'username'         => sanitize_text_field( $username ),
-			'display_name'     => sanitize_text_field( $display_name ),
+			// Truncate to the column widths: an over-long value would make the insert fail and the event go unlogged.
+			'username'         => mb_substr( sanitize_text_field( $username ), 0, 60 ),
+			'display_name'     => mb_substr( sanitize_text_field( $display_name ), 0, 250 ),
 			'event_type'       => $event_type,
 			'timestamp'        => current_time( 'mysql' ),
 			'ip_address'       => sanitize_text_field( $ip_address ),
@@ -201,16 +245,19 @@ class Audit_Logger {
 	 * @return string Client IP address.
 	 */
 	private function get_client_ip() {
-		$ip_headers = array(
-			'HTTP_CF_CONNECTING_IP',
-			'HTTP_CLIENT_IP',
-			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_FORWARDED',
-			'HTTP_X_CLUSTER_CLIENT_IP',
-			'HTTP_FORWARDED_FOR',
-			'HTTP_FORWARDED',
-			'REMOTE_ADDR',
-		);
+		/**
+		 * Filter the $_SERVER keys trusted to hold the client IP, in order of preference.
+		 *
+		 * Only REMOTE_ADDR is trusted by default. Headers such as X-Forwarded-For are
+		 * set by the client and can be forged unless a proxy you control overwrites
+		 * them, so add them here only when the site sits behind such a proxy, e.g.
+		 * array( 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ) behind Cloudflare.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string[] $ip_headers $_SERVER keys to check.
+		 */
+		$ip_headers = (array) apply_filters( 'fwaum_client_ip_headers', array( 'REMOTE_ADDR' ) );
 
 		foreach ( $ip_headers as $header ) {
 			if ( ! empty( $_SERVER[ $header ] ) ) {
@@ -219,8 +266,7 @@ class Audit_Logger {
 				if ( strpos( $ip, ',' ) !== false ) {
 					$ip = trim( explode( ',', $ip )[0] );
 				}
-				// Validate IP.
-				if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
 					return $ip;
 				}
 			}
@@ -464,64 +510,52 @@ class Audit_Logger {
 		if ( $retention_days > 0 ) {
 			Audit_Installer::cleanup_old_entries( $retention_days );
 		}
+
+		$anonymize_days = isset( $options['audit_anonymize_ips_days'] ) ? intval( $options['audit_anonymize_ips_days'] ) : 30;
+		if ( $anonymize_days > 0 ) {
+			self::anonymize_old_ips( $anonymize_days );
+		}
 	}
 
 	/**
-	 * Export audit entries to CSV
+	 * Anonymize IP addresses on entries older than the given number of days.
 	 *
-	 * @param array $args Query arguments.
-	 * @return string CSV content.
+	 * Uses core's wp_privacy_anonymize_ip(): the last octet of an IPv4 address
+	 * and the last 80 bits of an IPv6 address are zeroed. Entries already
+	 * anonymized are left alone because the value no longer changes.
+	 *
+	 * @param int $days Anonymize entries older than this many days.
 	 */
-	public static function export_to_csv( $args = array() ) {
-		$args['per_page'] = 10000; // Large number for export.
-		$results          = self::get_audit_entries( $args );
+	public static function anonymize_old_ips( $days ) {
+		global $wpdb;
+		$table_name = Audit_Installer::get_table_name();
+		// Entries are stored in site-local time (current_time( 'mysql' )), so compare in the same zone.
+		$cutoff = wp_date( 'Y-m-d H:i:s', time() - ( absint( $days ) * DAY_IN_SECONDS ) );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- php://temp is a memory stream, not filesystem.
-		$output = fopen( 'php://temp', 'r+' );
-
-		// Write CSV header.
-		fputcsv(
-			$output,
-			array(
-				'ID',
-				'User ID',
-				'Username',
-				'Display Name',
-				'Event Type',
-				'Timestamp',
-				'IP Address',
-				'User Agent',
-				'Login Method',
-				'Session Duration',
-				'Additional Data',
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance query on the plugin's own table.
+		$ips = $wpdb->get_col(
+			$wpdb->prepare(
+				'SELECT DISTINCT ip_address FROM %i WHERE timestamp < %s',
+				$table_name,
+				$cutoff
 			)
 		);
 
-		// Write data rows.
-		foreach ( $results['entries'] as $entry ) {
-			fputcsv(
-				$output,
-				array(
-					$entry->id,
-					$entry->user_id,
-					$entry->username,
-					$entry->display_name,
-					$entry->event_type,
-					$entry->timestamp,
-					$entry->ip_address,
-					$entry->user_agent,
-					$entry->login_method,
-					$entry->session_duration ? gmdate( 'H:i:s', $entry->session_duration ) : '',
-					$entry->additional_data,
+		foreach ( $ips as $ip ) {
+			$anonymized = wp_privacy_anonymize_ip( $ip );
+			if ( $anonymized === $ip ) {
+				continue;
+			}
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance query on the plugin's own table.
+			$wpdb->query(
+				$wpdb->prepare(
+					'UPDATE %i SET ip_address = %s WHERE ip_address = %s AND timestamp < %s',
+					$table_name,
+					$anonymized,
+					$ip,
+					$cutoff
 				)
 			);
 		}
-
-		rewind( $output );
-		$csv_content = stream_get_contents( $output );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing memory stream, not filesystem.
-		fclose( $output );
-
-		return $csv_content;
 	}
 }

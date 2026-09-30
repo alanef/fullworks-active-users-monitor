@@ -185,8 +185,7 @@ class Audit_Admin {
 
 			<!-- Audit Log Table -->
 			<form method="get">
-				<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just preserving the admin page parameter. ?>
-				<input type="hidden" name="page" value="<?php echo esc_attr( $_REQUEST['page'] ); ?>" />
+				<input type="hidden" name="page" value="fwaum-audit-log" />
 				<?php
 				$audit_table->search_box( esc_html__( 'Search audit entries', 'fullworks-active-users-monitor' ), 'search' );
 				$audit_table->views();

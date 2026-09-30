@@ -26,13 +26,6 @@ function fwaum_uninstall_cleanup() {
 	// Delete plugin transients.
 	delete_transient( 'fwaum_online_users_cache' );
 
-	// Delete user meta for all users.
-	$users = get_users( array( 'fields' => 'ID' ) );
-	foreach ( $users as $user_id ) {
-		delete_user_meta( $user_id, 'fwaum_last_login' );
-		delete_user_meta( $user_id, 'fwaum_session_start' );
-	}
-
 	// Clean up audit trail data.
 	if ( class_exists( '\\FullworksActiveUsersMonitor\\Includes\\Audit_Installer' ) ) {
 		\FullworksActiveUsersMonitor\Includes\Audit_Installer::uninstall();
@@ -40,15 +33,16 @@ function fwaum_uninstall_cleanup() {
 
 	// Clear scheduled events.
 	wp_clear_scheduled_hook( 'fwaum_cleanup_audit_logs' );
-
-	// Clear any cached data.
-	wp_cache_flush();
 }
+
+// User meta is shared by every site in a network, so delete it once, for all users, in one query each.
+delete_metadata( 'user', 0, 'fwaum_last_login', '', true );
+delete_metadata( 'user', 0, 'fwaum_session_start', '', true );
 
 // Check if it's a multisite installation.
 if ( is_multisite() ) {
 	// Get all sites in the network.
-	$fwaum_sites = get_sites();
+	$fwaum_sites = get_sites( array( 'number' => 0 ) );
 
 	foreach ( $fwaum_sites as $fwaum_site ) {
 		// Switch to each site.

@@ -47,8 +47,8 @@ class Dashboard_Widget {
 	 * Add dashboard widget
 	 */
 	public function add_dashboard_widget() {
-		// Only show to users who can list users.
-		if ( ! current_user_can( 'list_users' ) ) {
+		// Only show to users allowed to see online status.
+		if ( ! User_Tracker::current_user_can_view() ) {
 			return;
 		}
 

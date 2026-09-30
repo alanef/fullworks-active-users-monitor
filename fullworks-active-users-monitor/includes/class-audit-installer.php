@@ -161,8 +161,9 @@ class Audit_Installer {
 		}
 
 		global $wpdb;
-		$table_name  = self::get_table_name();
-		$cutoff_date = gmdate( 'Y-m-d H:i:s', strtotime( "-{$retention_days} days" ) );
+		$table_name = self::get_table_name();
+		// Entries are stored in site-local time (current_time( 'mysql' )), so compare in the same zone.
+		$cutoff_date = wp_date( 'Y-m-d H:i:s', time() - ( absint( $retention_days ) * DAY_IN_SECONDS ) );
 
 		$wpdb->query(
 			$wpdb->prepare(

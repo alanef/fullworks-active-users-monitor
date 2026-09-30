@@ -50,7 +50,7 @@ class Users_List {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! current_user_can( 'list_users' ) || ! User_Tracker::current_user_can_view() ) {
 			return;
 		}
 
@@ -162,10 +162,10 @@ class Users_List {
 	 */
 	public function add_online_filter_links( $views ) {
 		// Get counts.
-		$total_users   = count_users();
+		$total_users   = get_user_count();
 		$online_users  = $this->user_tracker->get_online_users();
 		$online_count  = count( $online_users );
-		$offline_count = $total_users['total_users'] - $online_count;
+		$offline_count = max( 0, $total_users - $online_count );
 
 		// Get current filter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for filter display
