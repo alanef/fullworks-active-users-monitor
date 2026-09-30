@@ -1,46 +1,20 @@
 {
-    "name": "fullworks-active-users-monitor",
-    "version": "1.0.0",
-    "description": "Real-time monitoring of logged-in WordPress users with visual indicators and admin tools",
-    "author": "Fullworks",
-    "license": "GPL-2.0-or-later",
-    "keywords": [
-        "wordpress",
-        "plugin",
-        "users",
-        "monitoring",
-        "admin"
-    ],
-    "homepage": "https://github.com/alanef/fullworks-active-users-monitor",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/alanef/fullworks-active-users-monitor.git"
-    },
-    "bugs": {
-        "url": "https://github.com/alanef/fullworks-active-users-monitor/issues"
-    },
-    "scripts": {
-        "env:start": "wp-env start --xdebug",
-        "env:stop": "wp-env stop",
-        "env:restart": "wp-env stop && wp-env start",
-        "env:reset": "wp-env destroy && wp-env start",
-        "env:cli": "wp-env run cli",
-        "env:logs": "wp-env logs",
-        "lint:php": "composer run-script lint",
-        "lint:php:fix": "composer run-script lint:fix",
-        "test": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit'",
-        "test:unit": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit --testsuite unit'",
-        "test:integration": "wp-env run tests-cli 'cd /var/www/html/wp-content/plugins/fullworks-active-users-monitor && phpunit --testsuite integration'",
-        "build": "./bin/build-release.sh",
-        "setup": "./bin/setup-plugin.sh",
-        "composer:install": "composer install",
-        "composer:update": "composer update"
-    },
-    "devDependencies": {
-        "@wordpress/env": "^9.0.0"
-    },
-    "engines": {
-        "node": ">=18.0.0",
-        "npm": ">=8.0.0"
-    }
+  "name": "fullworks-active-users-monitor-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Development project for the Fullworks Active Users Monitor WordPress plugin",
+  "author": "Alan Fuller <alan@fullworks.net>",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "wp-env": "wp-env",
+    "start": "wp-env start",
+    "stop": "wp-env stop",
+    "destroy": "wp-env destroy",
+    "test": "./run-tests.sh",
+    "test:unit": "./run-tests.sh",
+    "build": "composer run-script build"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.25.0"
+  }
 }

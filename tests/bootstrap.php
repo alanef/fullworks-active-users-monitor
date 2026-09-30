@@ -1,58 +1,67 @@
 <?php
 /**
- * PHPUnit bootstrap file
+ * PHPUnit bootstrap.
  *
- * @package FullworksActiveUsersMonitor
+ * Managed by wordpress-plugin-boilerplate/tooling - fix there first, then run bin/sync-tooling.sh
+ *
+ * Runs inside the wp-env "tests" container where the WordPress core test
+ * library lives at /wordpress-phpunit and the repository root is mapped to
+ * /var/www/html (see .wp-env.json "mappings").
  */
 
-// Get the plugin directory.
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+	if ( file_exists( '/wordpress-phpunit/includes/functions.php' ) ) {
+		$_tests_dir = '/wordpress-phpunit';
+	} elseif ( file_exists( '/tmp/wordpress-tests-lib/includes/functions.php' ) ) {
+		$_tests_dir = '/tmp/wordpress-tests-lib';
+	} else {
+		$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+	}
 }
 
-// Forward custom PHPUnit Polyfills configuration to PHPUnit bootstrap file.
-$_phpunit_polyfills_path = getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' );
-if ( false !== $_phpunit_polyfills_path ) {
-	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', $_phpunit_polyfills_path );
+if ( ! getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+	putenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH=' . dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills' );
 }
 
-if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+if ( ! file_exists( "{$_tests_dir}/includes/functions.php" ) ) {
+	echo "Could not find {$_tests_dir}/includes/functions.php" . PHP_EOL;
 	exit( 1 );
 }
 
-// Give access to tests_add_filter() function.
-require_once $_tests_dir . '/includes/functions.php';
+require_once "{$_tests_dir}/includes/functions.php";
 
 /**
- * Manually load the plugin being tested.
+ * Load the plugin and fire its activation hook.
  */
-function _manually_load_plugin() {
-	// Update the path to your plugin's main file.
-	$plugin_dir = dirname( __DIR__ );
-	$plugin_slug = basename( glob( $plugin_dir . '/*/fullworks-active-users-monitor.php' )[0] ?? 'fullworks-active-users-monitor/fullworks-active-users-monitor.php', '.php' );
-	
-	// Try to find the main plugin file.
-	$possible_files = array(
-		$plugin_dir . '/' . $plugin_slug . '/' . $plugin_slug . '.php',
-		$plugin_dir . '/fullworks-active-users-monitor/fullworks-active-users-monitor.php',
-	);
-	
-	foreach ( $possible_files as $file ) {
-		if ( file_exists( $file ) ) {
-			require $file;
-			return;
-		}
+function _fullworks_load_plugin_under_test() {
+	$plugin_file = WP_PLUGIN_DIR . '/fullworks-active-users-monitor/fullworks-active-users-monitor.php';
+
+	if ( ! file_exists( $plugin_file ) ) {
+		echo 'Could not find plugin file: ' . $plugin_file . PHP_EOL;
+		exit( 1 );
 	}
-	
-	// If we get here, we couldn't find the plugin file.
-	echo "Could not find plugin file to load for testing." . PHP_EOL;
-	exit( 1 );
+
+	// Never let Action Scheduler (if bundled) fire its async HTTP queue runner during tests.
+	tests_add_filter( 'action_scheduler_allow_async_request_runner', '__return_false' );
+
+	require $plugin_file;
+
+	// Activation hooks do not fire in the test environment. Real activation runs in the
+	// admin context, so load the admin includes (filesystem, upgrade, plugin helpers) first.
+	require_once ABSPATH . 'wp-admin/includes/admin.php';
+	do_action( 'activate_' . plugin_basename( $plugin_file ) );
 }
 
-tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+tests_add_filter( 'muplugins_loaded', '_fullworks_load_plugin_under_test' );
 
-// Start up the WP testing environment.
-require $_tests_dir . '/includes/bootstrap.php';
+// wp-env's tests site domain is "localhost", which PHPMailer rejects as a From address.
+tests_add_filter(
+	'wp_mail_from',
+	function () {
+		return 'wordpress@example.org';
+	}
+);
+
+require "{$_tests_dir}/includes/bootstrap.php";

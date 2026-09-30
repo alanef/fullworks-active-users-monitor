@@ -1,122 +1,143 @@
-name: Release
+# Managed by wordpress-plugin-boilerplate/tooling - fix there first, then run bin/sync-tooling.sh
+name: Build Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'    # Matches v1.7.3
-      - '*.*.*'      # Matches 1.7.3
-      - 'v*.*'       # Matches v2.3
-      - '*.*'        # Matches 2.3
+      - 'v*.*.*'
+      - '*.*.*'
 
 permissions:
   contents: write
 
+env:
+  PLUGIN_DIR: fullworks-active-users-monitor
+  PLUGIN_FILE: fullworks-active-users-monitor/fullworks-active-users-monitor.php
+  SVN_SLUG: fullworks-active-users-monitor
+
 jobs:
-  quality-checks:
+  run-checks:
     uses: ./.github/workflows/checks.yml
 
-  release:
-    needs: quality-checks
+  build-release:
+    needs: run-checks
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Extract PHP version
-      id: php_version
-      run: |
-        PHP_VERSION=$(grep -oP 'Requires PHP:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php || echo "7.4")
-        echo "version=$PHP_VERSION" >> $GITHUB_OUTPUT
+      - name: Get required PHP version
+        id: php_version
+        run: |
+          PHP_VERSION=$(grep -m1 "Requires PHP:" "$PLUGIN_FILE" | sed -E 's/.*Requires PHP:[[:space:]]*//' | tr -d ' \r')
+          PHP_VERSION=${PHP_VERSION:-7.4}
+          # The dev tooling (PHPUnit 9, PHPCS 3) needs PHP 7.4+, whatever the plugin itself supports.
+          if [ "$(printf '%s\n' "$PHP_VERSION" 7.4 | sort -V | head -1)" != "7.4" ]; then PHP_VERSION=7.4; fi
+          echo "PHP_VERSION=$PHP_VERSION" >> $GITHUB_OUTPUT
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ steps.php_version.outputs.version }}
-        tools: composer:v2, wp-cli
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ steps.php_version.outputs.PHP_VERSION }}
+          tools: composer:v2, wp-cli
 
-    - name: Verify tag matches plugin version
-      run: |
-        TAG_VERSION=${GITHUB_REF#refs/tags/}
-        TAG_VERSION=${TAG_VERSION#v}
-        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-        echo "Tag version: $TAG_VERSION"
-        echo "Plugin version: $PLUGIN_VERSION"
+      - name: Install WP-CLI dist-archive command
+        env:
+          # See checks.yml for why the token is handed back as http-basic.
+          GITHUB_TOKEN: ""
+          COMPOSER_AUTH: '{"http-basic":{"github.com":{"username":"x-access-token","password":"${{ github.token }}"}}}'
+        run: |
+          composer config --global --unset github-oauth.github.com 2>/dev/null || true
+          rm -f "$HOME/.composer/auth.json" \
+                "$HOME/.config/composer/auth.json" \
+                "$HOME/.wp-cli/packages/auth.json" 2>/dev/null || true
+          wp package install wp-cli/dist-archive-command:v3.1.0
 
-        if [ "$TAG_VERSION" != "$PLUGIN_VERSION" ]; then
-          echo "Tag version does not match plugin version!"
-          exit 1
-        fi
+      - name: Build plugin for release
+        run: composer run-script build
 
-    - name: Install dependencies
-      run: |
-        composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 -E "^[[:space:]]*\*?[[:space:]]*Version:" "$PLUGIN_FILE" | sed -E 's/.*Version:[[:space:]]*//' | tr -d ' \r')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version $VERSION"
 
-    - name: Install WP-CLI dist-archive command
-      env:
-        # WP-CLI's bundled Composer rejects the runner's ghs_ token when
-        # GitHub's longer stateless-token format is in play (its oauth-token
-        # validation fails on the format), which makes this step flake. The
-        # token is persisted in a config FILE by setup-php, so clearing env
-        # vars alone is not enough — strip the persisted github-oauth from
-        # every composer home (default + wp-cli's own) and clone the public
-        # command anonymously with empty Composer auth.
-        GITHUB_TOKEN: ""
-        COMPOSER_AUTH: "{}"
-      run: |
-        composer config --global --unset github-oauth.github.com 2>/dev/null || true
-        rm -f "$HOME/.composer/auth.json" \
-              "$HOME/.config/composer/auth.json" \
-              "$HOME/.wp-cli/packages/auth.json" 2>/dev/null || true
-        wp package install wp-cli/dist-archive-command:v3.1.0
+      - name: Name the release zip
+        run: cp "zipped/$PLUGIN_DIR-free.zip" "zipped/$PLUGIN_DIR-${{ steps.get_version.outputs.VERSION }}.zip"
 
-    - name: Build plugin
-      run: |
-        # Use WP-CLI to build the plugin archive
-        wp dist-archive ./fullworks-active-users-monitor ./fullworks-active-users-monitor.zip
+      - name: Verify tag matches plugin version
+        run: |
+          PLUGIN_VERSION=${{ steps.get_version.outputs.VERSION }}
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          TAG_VERSION=${TAG_VERSION#v}
+          echo "Plugin version: $PLUGIN_VERSION"
+          echo "Git tag version: $TAG_VERSION"
+          if [ "$PLUGIN_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch between plugin version ($PLUGIN_VERSION) and git tag ($TAG_VERSION)"
+            exit 1
+          fi
+          case "$PLUGIN_VERSION" in
+            *-*)
+              echo "::error::Refusing to release a pre-release version ($PLUGIN_VERSION)"
+              exit 1
+              ;;
+          esac
+          echo "Tag version matches plugin version: $PLUGIN_VERSION"
 
-        # Create dist directory for consistency with build script
-        mkdir -p dist
-        mv fullworks-active-users-monitor.zip dist/
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            Release of Fullworks Active Users Monitor v${{ steps.get_version.outputs.VERSION }}
 
-        # Also rename with version for better release management
-        PLUGIN_VERSION=$(grep -oP 'Version:\s*\K[\d.]+' fullworks-active-users-monitor/fullworks-active-users-monitor.php)
-        cp dist/fullworks-active-users-monitor.zip "dist/fullworks-active-users-monitor-${PLUGIN_VERSION}.zip"
+            ## Changes
+            See the [change log](https://github.com/alanef/fullworks-active-users-monitor/blob/main/CHANGELOG.md) for details.
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: dist/*.zip
-        body: |
-          Release of Plugin Name v${{ github.ref_name }}
+            ## Installation
+            Download the attached zip file and upload to your WordPress site.
+          draft: false
+          prerelease: false
+          files: |
+            zipped/fullworks-active-users-monitor-${{ steps.get_version.outputs.VERSION }}.zip
 
-          ## Installation
-          1. Download `fullworks-active-users-monitor.zip` from the assets below
-          2. In WordPress admin, go to Plugins > Add New > Upload Plugin
-          3. Choose the downloaded zip file and click Install Now
-          4. Activate the plugin
-          5. Configure the plugin in Settings > Plugin Name
+      - name: Deploy to WordPress.org
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          if [ -z "$SVN_USERNAME" ] || [ -z "$SVN_PASSWORD" ]; then
+            echo "::error::SVN_USERNAME / SVN_PASSWORD secrets are not set - cannot deploy to WordPress.org"
+            exit 1
+          fi
+          sudo apt-get update -q
+          sudo apt-get install -y -q subversion
 
-          ## Changelog
-          See [readme.txt](fullworks-active-users-monitor/readme.txt) for detailed changelog.
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p svn-tmp
+          cd svn-tmp
+          unzip -q "../zipped/$PLUGIN_DIR-free.zip"
 
-  deploy-wordpress-org:
-    needs: release
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Deploy to WordPress.org SVN
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      env:
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SLUG: fullworks-active-users-monitor
-        BUILD_DIR: fullworks-active-users-monitor
-        ASSETS_DIR: .wordpress-org
+          svn checkout "https://plugins.svn.wordpress.org/$SVN_SLUG/" svn-repo --username "$SVN_USERNAME" --password "$SVN_PASSWORD" --no-auth-cache
+
+          if [ -d "svn-repo/tags/$VERSION" ]; then
+            echo "::error::Tag $VERSION already exists on WordPress.org SVN"
+            exit 1
+          fi
+
+          rsync -a --delete --exclude='.svn' "$PLUGIN_DIR/" svn-repo/trunk/
+
+          cd svn-repo/trunk
+          svn add --force * --auto-props --parents --depth infinity -q || true
+          svn status | grep '^!' | sed 's/^! *//' | xargs -r -I{} svn delete "{}" || true
+
+          cd ..
+          svn cp trunk "tags/$VERSION"
+          svn commit -m "Release version $VERSION" --username "$SVN_USERNAME" --password "$SVN_PASSWORD" --no-auth-cache
+
+          echo "Successfully deployed $VERSION to WordPress.org"
