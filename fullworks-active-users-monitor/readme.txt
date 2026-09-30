@@ -4,7 +4,7 @@ Donate link: https://ko-fi.com/wpalan
 Tags: users, monitoring, active users, online users, admin tools
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 1.2.0-alpha.2
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -138,6 +138,21 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 
 == Changelog ==
 
+= 1.2.0 =
+* Security: an expired login cookie could crash the request through infinite recursion in the audit logger; only genuine expired sessions are now logged, once each
+* Security: CSV exports can no longer carry spreadsheet formulas from usernames or user agents
+* Security: the audit log records the real connecting IP by default; trust a proxy header with the new fwaum_client_ip_headers filter
+* New: personal data export and erasure for the audit log, plus suggested privacy policy text
+* Fixed: "Who Can See Online Status", "IP Address Privacy" and "Track Failed Logins" settings now take effect
+* Fixed: online users are found in one query and counted on sites of any size; refreshes reuse the cache
+* Fixed: with the Two Factor plugin, logins are recorded when the second factor succeeds and only 2FA logins are tagged Two Factor
+* Fixed: role names show as "Administrator" rather than "administrator"
+* Fixed: audit log times, retention and IP anonymization respect the site timezone
+* Fixed: valid Excel export, sanitised export filenames, translatable JavaScript text
+* Fixed: daily cleanup is removed on deactivation; uninstall scales to large sites and networks
+* Removed: keyboard shortcuts on the audit pages that overrode the browser's Ctrl/Cmd+F and Ctrl/Cmd+E
+* Full details in CHANGELOG.md on GitHub
+
 = 1.1.0 =
 * Added comprehensive audit trail functionality to track user login/logout events
 * New audit log table under Users menu with advanced filtering and search
@@ -167,6 +182,9 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 * Full internationalization support
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Security update: fixes a crash any visitor could trigger with an expired login cookie (whether or not the audit trail is enabled), and formula injection in CSV exports. Recommended for all users.
 
 = 1.1.0 =
 Major update: Adds comprehensive audit trail functionality to track all user login/logout events with export capabilities. Requires WordPress 6.2 or higher.

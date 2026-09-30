@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-30
+
 ### Security
 
 - An expired login cookie no longer crashes the request. The audit logger looked up the current user from inside the hook WordPress fires while it is still working that out, which recursed until PHP gave up, and anyone could trigger it with a made-up expired cookie. Expired sessions are now identified from the cookie itself, only genuine (correctly signed) cookies are logged, and each is logged once rather than on every request.

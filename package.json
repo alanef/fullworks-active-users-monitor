@@ -1,6 +1,6 @@
 {
   "name": "fullworks-active-users-monitor-project",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Development project for the Fullworks Active Users Monitor WordPress plugin",
   "author": "Alan Fuller <alan@fullworks.net>",
