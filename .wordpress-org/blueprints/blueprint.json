@@ -1,12 +1,10 @@
 {
+    "$schema": "https://playground.wordpress.net/blueprint-schema.json",
     "landingPage": "/wp-admin/users.php",
     "preferredVersions": {
-        "php": "7.4",
-        "wp": "5.9"
+        "php": "8.3",
+        "wp": "latest"
     },
-    "phpExtensionBundles": [
-        "kitchen-sink"
-    ],
     "steps": [
         {
             "step": "login",

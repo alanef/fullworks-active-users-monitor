@@ -49,8 +49,8 @@ class Admin_Bar {
 	 * @param object $wp_admin_bar WP_Admin_Bar instance.
 	 */
 	public function add_admin_bar_item( $wp_admin_bar ) {
-		// Only show to users who can list users.
-		if ( ! current_user_can( 'list_users' ) ) {
+		// Only show to users allowed to see online status.
+		if ( ! User_Tracker::current_user_can_view() ) {
 			return;
 		}
 
@@ -110,21 +110,26 @@ class Admin_Bar {
 			);
 
 			foreach ( $counts_by_role as $role => $count ) {
-				$role_obj  = get_role( $role );
-				$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+				$role_name = User_Tracker::get_role_label( $role );
 
 				$wp_admin_bar->add_node(
 					array(
 						'parent' => 'fwaum-online-users',
-						'id'     => 'fwaum-role-' . $role,
+						'id'     => 'fwaum-role-' . sanitize_html_class( $role ),
 						'title'  => sprintf(
 							'<span class="fwaum-role-count">%d %s</span>',
 							$count,
-							$role_name
+							esc_html( $role_name )
 						),
-						'href'   => admin_url( 'users.php?role=' . $role . '&fwaum_filter=online' ),
+						'href'   => add_query_arg(
+							array(
+								'role'         => rawurlencode( $role ),
+								'fwaum_filter' => 'online',
+							),
+							admin_url( 'users.php' )
+						),
 						'meta'   => array(
-							'class' => 'fwaum-role-item fwaum-role-' . $role,
+							'class' => 'fwaum-role-item fwaum-role-' . sanitize_html_class( $role ),
 						),
 					)
 				);
@@ -176,20 +181,17 @@ class Admin_Bar {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! User_Tracker::current_user_can_view() ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'fullworks-active-users-monitor' ) );
 		}
 
-		// Get fresh data.
-		$this->user_tracker->clear_cache();
-		$online_count   = $this->user_tracker->get_online_user_count( false );
-		$counts_by_role = $this->user_tracker->get_online_counts_by_role( false );
+		$online_count   = $this->user_tracker->get_online_user_count();
+		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
 
 		// Format role data.
 		$role_data = array();
 		foreach ( $counts_by_role as $role => $count ) {
-			$role_obj    = get_role( $role );
-			$role_name   = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
+			$role_name   = User_Tracker::get_role_label( $role );
 			$role_data[] = array(
 				'role'  => $role,
 				'name'  => $role_name,

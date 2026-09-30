@@ -223,3 +223,7 @@
 		width: fit-content;
 	}
 }
+/* "Refresh Now" button added to the users list stats notice by admin-script.js. */
+.fwaum-refresh-btn {
+	margin-left: 10px;
+}

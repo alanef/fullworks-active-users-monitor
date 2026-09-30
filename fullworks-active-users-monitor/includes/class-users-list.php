@@ -50,7 +50,7 @@ class Users_List {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! current_user_can( 'list_users' ) || ! User_Tracker::current_user_can_view() ) {
 			return;
 		}
 
@@ -162,10 +162,10 @@ class Users_List {
 	 */
 	public function add_online_filter_links( $views ) {
 		// Get counts.
-		$total_users   = count_users();
+		$total_users   = get_user_count();
 		$online_users  = $this->user_tracker->get_online_users();
 		$online_count  = count( $online_users );
-		$offline_count = $total_users['total_users'] - $online_count;
+		$offline_count = max( 0, $total_users - $online_count );
 
 		// Get current filter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for filter display
@@ -284,35 +284,16 @@ class Users_List {
 			return;
 		}
 
-		$online_count   = $this->user_tracker->get_online_user_count();
-		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
-
-		// Build role summary.
-		$role_summary = array();
-		foreach ( $counts_by_role as $role => $count ) {
-			if ( $count > 0 ) {
-				$role_obj  = get_role( $role );
-				$role_name = $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role );
-				/* translators: 1: Count, 2: Role name */
-				$role_summary[] = sprintf( _n( '%1$d %2$s', '%1$d %2$s', $count, 'fullworks-active-users-monitor' ), $count, $role_name );
-			}
-		}
-
-		$summary_text = ! empty( $role_summary ) ? implode( ', ', $role_summary ) : esc_html__( 'No users online', 'fullworks-active-users-monitor' );
+		$summary_text = self::build_summary_text(
+			$this->user_tracker->get_online_user_count(),
+			$this->user_tracker->get_online_counts_by_role()
+		);
 
 		?>
 		<div class="notice notice-info fwaum-stats-notice">
 			<p>
 				<strong><?php esc_html_e( 'Online Users:', 'fullworks-active-users-monitor' ); ?></strong>
-				<span class="fwaum-stats-summary">
-					<?php
-					/* translators: %d: Total online users */
-					printf( esc_html__( '%d users online', 'fullworks-active-users-monitor' ), esc_html( $online_count ) );
-					if ( ! empty( $role_summary ) ) {
-						echo ' (' . esc_html( $summary_text ) . ')';
-					}
-					?>
-				</span>
+				<span class="fwaum-stats-summary"><?php echo esc_html( $summary_text ); ?></span>
 				<span class="fwaum-stats-updated">
 					<?php esc_html_e( 'Last updated:', 'fullworks-active-users-monitor' ); ?>
 					<span class="fwaum-update-time"><?php echo esc_html( current_time( 'g:i:s a' ) ); ?></span>
@@ -320,6 +301,35 @@ class Users_List {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Build the "N users online (x Administrator, y Editor)" summary.
+	 *
+	 * Shared by the page render and the AJAX refresh so both read the same.
+	 *
+	 * @param int   $online_count   Total online users.
+	 * @param array $counts_by_role Online counts keyed by role slug.
+	 * @return string Plain text, not escaped.
+	 */
+	public static function build_summary_text( $online_count, $counts_by_role ) {
+		/* translators: %s: Number of online users. */
+		$text = sprintf( _n( '%s user online', '%s users online', $online_count, 'fullworks-active-users-monitor' ), number_format_i18n( $online_count ) );
+
+		$role_summary = array();
+		foreach ( $counts_by_role as $role => $count ) {
+			if ( $count > 0 ) {
+				$role_name = User_Tracker::get_role_label( $role );
+				/* translators: 1: Number of users, 2: Role name. */
+				$role_summary[] = sprintf( __( '%1$s %2$s', 'fullworks-active-users-monitor' ), number_format_i18n( $count ), $role_name );
+			}
+		}
+
+		if ( $role_summary ) {
+			$text .= ' (' . implode( ', ', $role_summary ) . ')';
+		}
+
+		return $text;
 	}
 
 	/**
@@ -372,7 +382,7 @@ class Users_List {
 				$online_users_data[] = array(
 					'user_id'    => $user_id,
 					'user_role'  => $user->roles[0] ?? 'subscriber',
-					'badge_text' => esc_html__( 'ONLINE', 'fullworks-active-users-monitor' ),
+					'badge_text' => __( 'ONLINE', 'fullworks-active-users-monitor' ),
 				);
 			}
 		}

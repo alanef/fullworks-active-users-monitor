@@ -177,12 +177,14 @@ class Audit_Table extends \WP_List_Table {
 	 * @return string Timestamp column HTML.
 	 */
 	protected function column_timestamp( $item ) {
-		$timestamp      = strtotime( $item->timestamp );
-		$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
-		$relative_time  = human_time_diff( $timestamp, time() );
+		// Stored in site-local time; convert to a real Unix timestamp before comparing with time().
+		$timestamp      = strtotime( get_gmt_from_date( $item->timestamp ) );
+		$formatted_date = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
+		/* translators: %s: Human-readable time difference, e.g. "5 mins". */
+		$relative_time = sprintf( __( '%s ago', 'fullworks-active-users-monitor' ), human_time_diff( $timestamp, time() ) );
 
 		return sprintf(
-			'%s<br><small>%s ago</small>',
+			'%s<br><small>%s</small>',
 			esc_html( $formatted_date ),
 			esc_html( $relative_time )
 		);

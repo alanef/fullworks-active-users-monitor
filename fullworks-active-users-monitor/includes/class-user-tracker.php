@@ -65,19 +65,18 @@ class User_Tracker {
 			}
 		}
 
-		$online_users = array();
+		// Core filter, documented in wp-includes/class-wp-session-tokens.php.
+		$manager = apply_filters( 'session_token_manager', 'WP_User_Meta_Session_Tokens' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core hook.
 
-		// Get all users with the list_users capability to check.
-		$users = get_users(
-			array(
-				'fields' => 'ID',
-				'number' => 1000, // Limit for performance.
-			)
-		);
-
-		foreach ( $users as $user_id ) {
-			if ( $this->is_user_online( $user_id ) ) {
-				$online_users[] = $user_id;
+		if ( 'WP_User_Meta_Session_Tokens' === $manager ) {
+			$online_users = $this->query_online_users_from_meta();
+		} else {
+			// A custom session store is not in usermeta, so ask the manager user by user.
+			$online_users = array();
+			foreach ( get_users( array( 'fields' => 'ID' ) ) as $user_id ) {
+				if ( $this->is_user_online( $user_id ) ) {
+					$online_users[] = (int) $user_id;
+				}
 			}
 		}
 
@@ -85,6 +84,88 @@ class User_Tracker {
 		set_transient( self::CACHE_KEY, $online_users, self::CACHE_DURATION );
 
 		return $online_users;
+	}
+
+	/**
+	 * Find users of this site with an unexpired session, in one query.
+	 *
+	 * Only users holding session tokens are read, rather than every user on the
+	 * site, and the join on the capabilities key keeps a multisite network's
+	 * other sites' users out.
+	 *
+	 * @return int[] Online user IDs.
+	 */
+	private function query_online_users_from_meta() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Result is cached in a transient by the caller.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT tokens.user_id, tokens.meta_value
+				FROM %i tokens
+				INNER JOIN %i caps ON caps.user_id = tokens.user_id AND caps.meta_key = %s
+				WHERE tokens.meta_key = %s',
+				$wpdb->usermeta,
+				$wpdb->usermeta,
+				$wpdb->get_blog_prefix() . 'capabilities',
+				'session_tokens'
+			)
+		);
+
+		$now          = time();
+		$online_users = array();
+		foreach ( $rows as $row ) {
+			$sessions = maybe_unserialize( $row->meta_value );
+			if ( ! is_array( $sessions ) ) {
+				continue;
+			}
+			foreach ( $sessions as $session ) {
+				if ( isset( $session['expiration'] ) && $session['expiration'] >= $now ) {
+					$online_users[] = (int) $row->user_id;
+					break;
+				}
+			}
+		}
+
+		return $online_users;
+	}
+
+	/**
+	 * Get a role's translated display name, e.g. "Administrator" for "administrator".
+	 *
+	 * @param string $role Role slug.
+	 * @return string
+	 */
+	public static function get_role_label( $role ) {
+		$names = wp_roles()->role_names;
+		return isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : ucfirst( $role );
+	}
+
+	/**
+	 * Check whether the current user may see who is online.
+	 *
+	 * Administrators always can; otherwise the user needs one of the roles
+	 * chosen under "Who Can See Online Status".
+	 *
+	 * @return bool
+	 */
+	public static function current_user_can_view() {
+		$can_view = current_user_can( 'manage_options' );
+
+		if ( ! $can_view && is_user_logged_in() ) {
+			$options    = get_option( 'fwaum_settings', array() );
+			$view_roles = isset( $options['view_roles'] ) && is_array( $options['view_roles'] ) ? $options['view_roles'] : array( 'administrator' );
+			$can_view   = (bool) array_intersect( wp_get_current_user()->roles, $view_roles );
+		}
+
+		/**
+		 * Filter whether the current user may see online status.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param bool $can_view Whether the current user may see online status.
+		 */
+		return (bool) apply_filters( 'fwaum_current_user_can_view', $can_view );
 	}
 
 	/**

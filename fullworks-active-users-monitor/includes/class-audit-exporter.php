@@ -124,15 +124,15 @@ class Audit_Exporter {
 				array(
 					$entry->id,
 					$entry->user_id,
-					$entry->username,
-					$entry->display_name,
+					$this->csv_safe( $entry->username ),
+					$this->csv_safe( $entry->display_name ),
 					$this->get_event_type_label( $entry->event_type ),
 					$entry->timestamp,
-					$entry->ip_address,
-					$entry->user_agent,
+					$this->csv_safe( $entry->ip_address ),
+					$this->csv_safe( $entry->user_agent ),
 					$this->get_login_method_label( $entry->login_method ),
 					$entry->session_duration,
-					$entry->additional_data,
+					$this->csv_safe( $entry->additional_data ),
 				)
 			);
 		}
@@ -140,6 +140,24 @@ class Audit_Exporter {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing php://output stream, not filesystem.
 		fclose( $output );
 		exit;
+	}
+
+	/**
+	 * Neutralise a value a spreadsheet would otherwise run as a formula.
+	 *
+	 * Usernames from failed logins and user agents are chosen by whoever sends
+	 * the request, so a value such as =HYPERLINK(...) must not reach a
+	 * spreadsheet as a live formula. A leading apostrophe makes it plain text.
+	 *
+	 * @param string $value Cell value.
+	 * @return string
+	 */
+	private function csv_safe( $value ) {
+		$value = (string) $value;
+		if ( '' !== $value && in_array( $value[0], array( '=', '+', '-', '@', "\t", "\r" ), true ) ) {
+			return "'" . $value;
+		}
+		return $value;
 	}
 
 	/**
@@ -206,7 +224,7 @@ class Audit_Exporter {
 
 		// Start Excel XML.
 		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-		echo '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet">' . "\n";
+		echo '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' . "\n";
 		echo '<Worksheet ss:Name="Audit Log">' . "\n";
 		echo '<Table>' . "\n";
 
@@ -256,7 +274,7 @@ class Audit_Exporter {
 				),
 				array(
 					'type'  => 'DateTime',
-					'value' => $entry->timestamp,
+					'value' => str_replace( ' ', 'T', $entry->timestamp ),
 				),
 				array(
 					'type'  => 'String',
@@ -270,9 +288,13 @@ class Audit_Exporter {
 					'type'  => 'String',
 					'value' => $this->get_login_method_label( $entry->login_method ),
 				),
-				array(
+				// An empty Number cell is invalid SpreadsheetML.
+				null === $entry->session_duration ? array(
+					'type'  => 'String',
+					'value' => '',
+				) : array(
 					'type'  => 'Number',
-					'value' => $entry->session_duration ?? '',
+					'value' => $entry->session_duration,
 				),
 			);
 
@@ -337,7 +359,8 @@ class Audit_Exporter {
 
 		$extension = isset( $extensions[ $format ] ) ? $extensions[ $format ] : 'csv';
 
-		return $filename . '.' . $extension;
+		// Date filters are free text from the request; keep the header value safe.
+		return sanitize_file_name( $filename . '.' . $extension );
 	}
 
 	/**

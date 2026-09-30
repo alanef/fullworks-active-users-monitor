@@ -49,17 +49,14 @@ class Ajax_Handler {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! User_Tracker::current_user_can_view() ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'fullworks-active-users-monitor' ) );
 		}
 
-		// Clear cache for fresh data.
-		$this->user_tracker->clear_cache();
-
 		// Get online users.
-		$online_users   = $this->user_tracker->get_online_users( false );
+		$online_users   = $this->user_tracker->get_online_users();
 		$online_count   = count( $online_users );
-		$counts_by_role = $this->user_tracker->get_online_counts_by_role( false );
+		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
 
 		// Get user details.
 		$users_data = array();
@@ -70,7 +67,6 @@ class Ajax_Handler {
 					'id'           => $user_id,
 					'username'     => $user->user_login,
 					'display_name' => $user->display_name,
-					'email'        => $user->user_email,
 					'roles'        => $user->roles,
 					'avatar_url'   => get_avatar_url( $user_id, array( 'size' => 32 ) ),
 					'profile_url'  => get_edit_user_link( $user_id ),
@@ -82,10 +78,9 @@ class Ajax_Handler {
 		// Format role counts.
 		$role_counts = array();
 		foreach ( $counts_by_role as $role => $count ) {
-			$role_obj      = get_role( $role );
 			$role_counts[] = array(
 				'role'  => $role,
-				'name'  => $role_obj ? translate_user_role( $role_obj->name ) : ucfirst( $role ),
+				'name'  => User_Tracker::get_role_label( $role ),
 				'count' => $count,
 			);
 		}
@@ -111,16 +106,13 @@ class Ajax_Handler {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! current_user_can( 'list_users' ) || ! User_Tracker::current_user_can_view() ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'fullworks-active-users-monitor' ) );
 		}
 
 		// Get page of users to update.
 		$page     = isset( $_POST['page'] ) ? absint( wp_unslash( $_POST['page'] ) ) : 1;
 		$per_page = isset( $_POST['per_page'] ) ? absint( wp_unslash( $_POST['per_page'] ) ) : 20;
-
-		// Clear cache for fresh data.
-		$this->user_tracker->clear_cache();
 
 		// Get users on current page.
 		$args = array(
@@ -133,14 +125,14 @@ class Ajax_Handler {
 		if ( isset( $_POST['filter'] ) && ! empty( $_POST['filter'] ) ) {
 			$filter = sanitize_text_field( wp_unslash( $_POST['filter'] ) );
 			if ( 'online' === $filter ) {
-				$online_users = $this->user_tracker->get_online_users( false );
+				$online_users = $this->user_tracker->get_online_users();
 				if ( empty( $online_users ) ) {
 					$args['include'] = array( 0 );
 				} else {
 					$args['include'] = $online_users;
 				}
 			} elseif ( 'offline' === $filter ) {
-				$online_users = $this->user_tracker->get_online_users( false );
+				$online_users = $this->user_tracker->get_online_users();
 				if ( ! empty( $online_users ) ) {
 					// Note: Using 'exclude' parameter is necessary here to show offline users.
 					// While this can impact performance on sites with many users, it's required
@@ -169,20 +161,21 @@ class Ajax_Handler {
 		}
 
 		// Get updated stats.
-		$online_count   = $this->user_tracker->get_online_user_count( false );
-		$counts_by_role = $this->user_tracker->get_online_counts_by_role( false );
+		$online_count   = $this->user_tracker->get_online_user_count();
+		$counts_by_role = $this->user_tracker->get_online_counts_by_role();
 
 		// Get total user count for offline calculation.
-		$total_users   = count_users();
-		$offline_count = $total_users['total_users'] - $online_count;
+		$total_users   = get_user_count();
+		$offline_count = max( 0, $total_users - $online_count );
 
 		wp_send_json_success(
 			array(
 				'users'         => $status_data,
 				'total_online'  => $online_count,
 				'total_offline' => $offline_count,
-				'total_users'   => $total_users['total_users'],
+				'total_users'   => $total_users,
 				'role_counts'   => $counts_by_role,
+				'summary'       => Users_List::build_summary_text( $online_count, $counts_by_role ),
 				// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- Using timestamp format for JavaScript Date() compatibility in AJAX response. Site timezone needed for accurate "last updated" display.
 				'timestamp'     => current_time( 'timestamp' ),
 			)
@@ -199,7 +192,7 @@ class Ajax_Handler {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'list_users' ) ) {
+		if ( ! current_user_can( 'list_users' ) || ! User_Tracker::current_user_can_view() ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'fullworks-active-users-monitor' ) );
 		}
 

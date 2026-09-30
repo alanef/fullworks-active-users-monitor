@@ -87,6 +87,13 @@ class Audit_Admin {
 					'loading'       => esc_html__( 'Loading...', 'fullworks-active-users-monitor' ),
 					'error'         => esc_html__( 'An error occurred while processing your request.', 'fullworks-active-users-monitor' ),
 					'exportStart'   => esc_html__( 'Starting export...', 'fullworks-active-users-monitor' ),
+					'exportButton'  => __( 'Export Audit Log', 'fullworks-active-users-monitor' ),
+					'selectEntries' => __( 'Please select entries to delete.', 'fullworks-active-users-monitor' ),
+					'today'         => __( 'Today', 'fullworks-active-users-monitor' ),
+					'yesterday'     => __( 'Yesterday', 'fullworks-active-users-monitor' ),
+					'last7Days'     => __( 'Last 7 days', 'fullworks-active-users-monitor' ),
+					'last30Days'    => __( 'Last 30 days', 'fullworks-active-users-monitor' ),
+					'clear'         => __( 'Clear', 'fullworks-active-users-monitor' ),
 				),
 			)
 		);
@@ -185,8 +192,7 @@ class Audit_Admin {
 
 			<!-- Audit Log Table -->
 			<form method="get">
-				<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just preserving the admin page parameter. ?>
-				<input type="hidden" name="page" value="<?php echo esc_attr( $_REQUEST['page'] ); ?>" />
+				<input type="hidden" name="page" value="fwaum-audit-log" />
 				<?php
 				$audit_table->search_box( esc_html__( 'Search audit entries', 'fullworks-active-users-monitor' ), 'search' );
 				$audit_table->views();
@@ -394,10 +400,16 @@ class Audit_Admin {
 				<th><?php esc_html_e( 'Date & Time', 'fullworks-active-users-monitor' ); ?></th>
 				<td>
 					<?php
-					$timestamp = strtotime( $entry->timestamp );
-					echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) );
+					// Stored in site-local time; convert to a real Unix timestamp before comparing with time().
+					$timestamp = strtotime( get_gmt_from_date( $entry->timestamp ) );
+					echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) );
 					?>
-					<br><small><?php echo esc_html( human_time_diff( $timestamp, time() ) . ' ago' ); ?></small>
+					<br><small>
+					<?php
+					/* translators: %s: Human-readable time difference, e.g. "5 mins". */
+					echo esc_html( sprintf( __( '%s ago', 'fullworks-active-users-monitor' ), human_time_diff( $timestamp, time() ) ) );
+					?>
+					</small>
 				</td>
 			</tr>
 			<tr>

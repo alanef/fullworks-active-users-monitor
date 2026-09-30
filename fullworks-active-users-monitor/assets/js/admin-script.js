@@ -13,11 +13,6 @@
 	 * Initialize on document ready
 	 */
 	$(document).ready(function() {
-		console.debug('[FWAUM] Initializing Active Users Monitor');
-		console.debug('[FWAUM] Ajax URL:', fwaumAjax.ajaxUrl);
-		console.debug('[FWAUM] Refresh Interval:', fwaumAjax.refreshInterval);
-		console.debug('[FWAUM] Nonce:', fwaumAjax.nonce);
-		
 		// Initialize components.
 		initAdminBar();
 		initUsersList();
@@ -25,10 +20,7 @@
 		
 		// Start auto-refresh if configured.
 		if (fwaumAjax.refreshInterval > 0) {
-			console.debug('[FWAUM] Starting auto-refresh with interval:', fwaumAjax.refreshInterval);
 			startAutoRefresh();
-		} else {
-			console.debug('[FWAUM] Auto-refresh disabled (interval is 0 or not set)');
 		}
 	});
 
@@ -57,8 +49,9 @@
 		// Add refresh button to stats notice.
 		var $statsNotice = $('.fwaum-stats-notice');
 		if ($statsNotice.length) {
-			var refreshBtn = '<button type="button" class="button button-small fwaum-refresh-btn" style="margin-left: 10px;">Refresh Now</button>';
-			$statsNotice.find('p').append(refreshBtn);
+			var $refreshBtn = $('<button type="button" class="button button-small fwaum-refresh-btn">')
+				.text(fwaumAjax.strings.refreshNow);
+			$statsNotice.find('p').append($refreshBtn);
 			
 			// Handle refresh button click.
 			$('.fwaum-refresh-btn').on('click', function() {
@@ -128,9 +121,6 @@
 				updateAdminBarDisplay(response.data);
 			}
 		})
-		.fail(function() {
-			console.debug('Failed to update admin bar');
-		})
 		.always(function() {
 			$adminBarItem.removeClass('fwaum-admin-bar-loading');
 		});
@@ -193,7 +183,7 @@
 
 		// Show loading state.
 		$('.wp-list-table').addClass('fwaum-loading');
-		$('.fwaum-refresh-btn').prop('disabled', true).text('Refreshing...');
+		$('.fwaum-refresh-btn').prop('disabled', true).text(fwaumAjax.strings.refreshing);
 
 		// Make AJAX request.
 		$.post(fwaumAjax.ajaxUrl, {
@@ -206,16 +196,11 @@
 		.done(function(response) {
 			if (response.success) {
 				updateUsersListDisplay(response.data);
-			} else {
-				console.error('Failed to refresh users list:', response.data);
 			}
-		})
-		.fail(function() {
-			console.error('AJAX request failed');
 		})
 		.always(function() {
 			$('.wp-list-table').removeClass('fwaum-loading');
-			$('.fwaum-refresh-btn').prop('disabled', false).text('Refresh Now');
+			$('.fwaum-refresh-btn').prop('disabled', false).text(fwaumAjax.strings.refreshNow);
 			isUpdating = false;
 		});
 	}
@@ -258,7 +243,7 @@
 			// Update status indicator.
 			$statusCell.removeClass('fwaum-status-offline').addClass('fwaum-status-online');
 			$statusCell.find('.fwaum-status-dot').text('●');
-			$statusCell.find('.fwaum-status-text').text('Online');
+			$statusCell.find('.fwaum-status-text').text(fwaumAjax.strings.online);
 			$statusCell.find('.fwaum-last-seen').remove();
 
 			// Add online styling.
@@ -267,20 +252,20 @@
 
 			// Add online badge if not exists.
 			if (!$usernameCell.find('.fwaum-online-badge').length) {
-				$usernameCell.find('a').after('<span class="fwaum-online-badge">ONLINE</span>');
+				$usernameCell.find('a').after($('<span class="fwaum-online-badge">').text(fwaumAjax.strings.onlineBadge));
 			}
 		} else {
 			// Update status indicator.
 			$statusCell.removeClass('fwaum-status-online').addClass('fwaum-status-offline');
 			$statusCell.find('.fwaum-status-dot').text('○');
-			$statusCell.find('.fwaum-status-text').text('Offline');
+			$statusCell.find('.fwaum-status-text').text(fwaumAjax.strings.offline);
 
 			// Update or add last seen.
 			var $lastSeen = $statusCell.find('.fwaum-last-seen');
 			if ($lastSeen.length) {
 				$lastSeen.text(userData.last_seen);
 			} else {
-				$statusCell.append('<span class="fwaum-last-seen">' + userData.last_seen + '</span>');
+				$statusCell.append($('<span class="fwaum-last-seen">').text(userData.last_seen));
 			}
 
 			// Remove online styling.
@@ -294,48 +279,24 @@
 	 * Update stats summary
 	 */
 	function updateStatsSummary(data) {
-		var $summary = $('.fwaum-stats-summary');
-		if (!$summary.length) {
-			return;
-		}
-
-		// Build role summary text.
-		var roleSummary = [];
-		if (data.role_counts) {
-			for (var role in data.role_counts) {
-				if (data.role_counts[role] > 0) {
-					roleSummary.push(data.role_counts[role] + ' ' + role);
-				}
-			}
-		}
-
-		// Update summary text.
-		var summaryText = data.total_online + ' users online';
-		if (roleSummary.length > 0) {
-			summaryText += ' (' + roleSummary.join(', ') + ')';
-		}
-		
-		$summary.text(summaryText);
+		// The server builds the translated summary so it matches the page render.
+		$('.fwaum-stats-summary').text(data.summary);
 	}
 
 	/**
 	 * Update filter link counts
 	 */
 	function updateFilterCounts(data) {
-		console.debug('[FWAUM] Updating filter counts - Online:', data.total_online, 'Offline:', data.total_offline);
-		
 		// Update Online filter count.
 		var $onlineFilter = $('.subsubsub a[href*="fwaum_filter=online"] .count');
 		if ($onlineFilter.length) {
 			$onlineFilter.text('(' + data.total_online + ')');
-			console.debug('[FWAUM] Updated online filter count');
 		}
-		
+
 		// Update Offline filter count.
 		var $offlineFilter = $('.subsubsub a[href*="fwaum_filter=offline"] .count');
 		if ($offlineFilter.length) {
 			$offlineFilter.text('(' + data.total_offline + ')');
-			console.debug('[FWAUM] Updated offline filter count');
 		}
 	}
 

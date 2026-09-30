@@ -3,7 +3,7 @@
  * Plugin Name:       Fullworks Active Users Monitor
  * Plugin URI:        https://fullworks.net/products/active-users-monitor/
  * Description:       Provides real-time visibility of logged-in users for administrators with visual indicators and filtering capabilities.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Fullworks
@@ -24,18 +24,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants with unique prefix (minimum 4 characters).
-define( 'FWAUM_VERSION', '1.1.0' );
+define( 'FWAUM_VERSION', '1.2.0' );
 define( 'FWAUM_PLUGIN_FILE', __FILE__ );
 define( 'FWAUM_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FWAUM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'FWAUM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
-// Require Composer autoloader if it exists.
-if ( file_exists( FWAUM_PLUGIN_PATH . 'includes/vendor/autoload.php' ) ) {
-	require_once FWAUM_PLUGIN_PATH . 'includes/vendor/autoload.php';
-}
-
-// Manually include required files if autoloader not available.
+// Load plugin classes.
 require_once FWAUM_PLUGIN_PATH . 'includes/class-user-tracker.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-admin-bar.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-users-list.php';
@@ -50,6 +45,7 @@ require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-logger.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-table.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-exporter.php';
 require_once FWAUM_PLUGIN_PATH . 'includes/class-audit-admin.php';
+require_once FWAUM_PLUGIN_PATH . 'includes/class-privacy.php';
 
 /**
  * Main plugin class
@@ -163,6 +159,7 @@ class Plugin {
 		$this->audit_logger   = new Includes\Audit_Logger();
 		$this->audit_exporter = new Includes\Audit_Exporter();
 		$this->audit_admin    = new Includes\Audit_Admin();
+		new Includes\Privacy();
 
 		// Register hooks.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
@@ -186,6 +183,11 @@ class Plugin {
 		if ( Includes\Audit_Installer::needs_update() ) {
 			Includes\Audit_Installer::install();
 		}
+
+		// Sites updated without reactivation still need the daily cleanup.
+		if ( ! wp_next_scheduled( 'fwaum_cleanup_audit_logs' ) ) {
+			wp_schedule_event( time(), 'daily', 'fwaum_cleanup_audit_logs' );
+		}
 	}
 
 	/**
@@ -194,16 +196,14 @@ class Plugin {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_admin_assets( $hook ) {
-		// Load on users page, settings page, dashboard, and audit pages.
+		// Load on users page, settings page and dashboard; the audit pages enqueue their own assets.
 		$allowed_hooks = array(
 			'users.php',
 			'settings_page_fwaum-settings',
 			'index.php',
-			'toplevel_page_fwaum-audit-log',
-			'audit-log_page_fwaum-audit-export',
 		);
 
-		if ( ! in_array( $hook, $allowed_hooks, true ) ) {
+		if ( ! in_array( $hook, $allowed_hooks, true ) || ! Includes\User_Tracker::current_user_can_view() ) {
 			return;
 		}
 
@@ -233,7 +233,12 @@ class Plugin {
 				'nonce'           => wp_create_nonce( 'fwaum_ajax_nonce' ),
 				'refreshInterval' => $refresh_interval * 1000, // Convert to milliseconds.
 				'strings'         => array(
-					'error' => __( 'An error occurred while updating online users.', 'fullworks-active-users-monitor' ),
+					'error'       => __( 'An error occurred while updating online users.', 'fullworks-active-users-monitor' ),
+					'refreshNow'  => __( 'Refresh Now', 'fullworks-active-users-monitor' ),
+					'refreshing'  => __( 'Refreshing...', 'fullworks-active-users-monitor' ),
+					'online'      => __( 'Online', 'fullworks-active-users-monitor' ),
+					'offline'     => __( 'Offline', 'fullworks-active-users-monitor' ),
+					'onlineBadge' => __( 'ONLINE', 'fullworks-active-users-monitor' ),
 				),
 			)
 		);
@@ -243,7 +248,7 @@ class Plugin {
 	 * Enqueue admin bar assets
 	 */
 	public function enqueue_admin_bar_assets() {
-		if ( ! is_admin_bar_showing() || ! current_user_can( 'list_users' ) ) {
+		if ( ! is_admin_bar_showing() || ! Includes\User_Tracker::current_user_can_view() ) {
 			return;
 		}
 
@@ -265,7 +270,7 @@ class Plugin {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( admin_url( 'options-general.php?page=fwaum-settings' ) ),
-			__( 'Settings', 'fullworks-active-users-monitor' )
+			esc_html__( 'Settings', 'fullworks-active-users-monitor' )
 		);
 		array_unshift( $links, $settings_link );
 		return $links;
@@ -304,6 +309,11 @@ register_activation_hook(
 		// Install audit trail database table.
 		Includes\Audit_Installer::install();
 
+		// Daily audit log cleanup (retention and IP anonymization).
+		if ( ! wp_next_scheduled( 'fwaum_cleanup_audit_logs' ) ) {
+			wp_schedule_event( time(), 'daily', 'fwaum_cleanup_audit_logs' );
+		}
+
 		// Clear any transients.
 		delete_transient( 'fwaum_online_users_cache' );
 	}
@@ -315,5 +325,7 @@ register_deactivation_hook(
 	function () {
 		// Clear transients.
 		delete_transient( 'fwaum_online_users_cache' );
+
+		wp_clear_scheduled_hook( 'fwaum_cleanup_audit_logs' );
 	}
 );

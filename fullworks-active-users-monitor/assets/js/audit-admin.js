@@ -118,7 +118,7 @@
             // Clean up and restore button
             setTimeout(function() {
                 $tempForm.remove();
-                $button.prop('disabled', false).text($button.data('original-text') || fwaumAuditAjax.strings.exportButton || 'Export Audit Log');
+                $button.prop('disabled', false).text($button.data('original-text') || fwaumAuditAjax.strings.exportButton);
             }, 2000);
         });
 
@@ -144,7 +144,7 @@
                 var selectedCount = $bulkForm.find('input[name="audit_entries[]"]:checked').length;
 
                 if (selectedCount === 0) {
-                    alert('Please select entries to delete.');
+                    alert(fwaumAuditAjax.strings.selectEntries);
                     e.preventDefault();
                     return;
                 }
@@ -201,18 +201,19 @@
             return;
         }
 
-        var $quickDates = $('<div class="fwaum-quick-dates" style="margin-top: 5px;">');
+        var $quickDates = $('<div class="fwaum-quick-dates">');
+        var strings = fwaumAuditAjax.strings;
 
         var dateRanges = [
-            { label: 'Today', days: 0 },
-            { label: 'Yesterday', days: 1, single: true },
-            { label: 'Last 7 days', days: 7 },
-            { label: 'Last 30 days', days: 30 },
-            { label: 'Clear', clear: true }
+            { label: strings.today, days: 0 },
+            { label: strings.yesterday, days: 1, single: true },
+            { label: strings.last7Days, days: 7 },
+            { label: strings.last30Days, days: 30 },
+            { label: strings.clear, clear: true }
         ];
 
         $.each(dateRanges, function(i, range) {
-            var $btn = $('<button type="button" class="button button-small" style="margin-right: 5px; margin-bottom: 2px;">')
+            var $btn = $('<button type="button" class="button button-small">')
                 .text(range.label);
 
             if (range.clear) {
@@ -259,67 +260,6 @@
     }
 
     /**
-     * Auto-refresh functionality for real-time updates (optional)
-     */
-    function initAutoRefresh() {
-        var $refreshButton = $('.page-title-action').first();
-
-        if (!$refreshButton.length) {
-            return;
-        }
-
-        // Add refresh button
-        var $autoRefresh = $('<a href="#" class="page-title-action fwaum-auto-refresh" style="margin-left: 10px;">Auto Refresh: Off</a>');
-        var refreshInterval;
-        var isAutoRefreshing = false;
-
-        $autoRefresh.on('click', function(e) {
-            e.preventDefault();
-
-            if (isAutoRefreshing) {
-                // Turn off auto-refresh
-                clearInterval(refreshInterval);
-                isAutoRefreshing = false;
-                $(this).text('Auto Refresh: Off').removeClass('fwaum-refreshing');
-            } else {
-                // Turn on auto-refresh
-                isAutoRefreshing = true;
-                $(this).text('Auto Refresh: On').addClass('fwaum-refreshing');
-
-                refreshInterval = setInterval(function() {
-                    // Reload the page to get fresh data
-                    window.location.reload();
-                }, 30000); // 30 seconds
-            }
-        });
-
-        $refreshButton.after($autoRefresh);
-    }
-
-    /**
-     * Keyboard shortcuts
-     */
-    $(document).on('keydown', function(e) {
-        // Ctrl+F or Cmd+F to focus search box
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === 70) {
-            var $searchBox = $('#search-submit').prev('input[type="search"]');
-            if ($searchBox.length) {
-                e.preventDefault();
-                $searchBox.focus().select();
-            }
-        }
-
-        // Ctrl+E or Cmd+E to go to export page
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === 69) {
-            var exportUrl = $('a[href*="fwaum-audit-export"]').attr('href');
-            if (exportUrl && window.location.href.indexOf('fwaum-audit') > -1) {
-                e.preventDefault();
-                window.location.href = exportUrl;
-            }
-        }
-    });
-
-    /**
      * Enhanced table interactions
      */
     function enhanceTableInteractions() {
@@ -350,16 +290,3 @@
 
 })(jQuery);
 
-// Add some CSS for enhanced interactions
-jQuery(document).ready(function($) {
-    $('<style>')
-        .prop('type', 'text/css')
-        .html(`
-            .fwaum-row-hover { background-color: #f0f0f1 !important; }
-            .fwaum-refreshing { color: #00a32a; font-weight: bold; }
-            .fwaum-quick-dates .button-small { font-size: 11px; padding: 2px 6px; }
-            .wp-list-table tbody tr { cursor: pointer; }
-            .wp-list-table tbody tr td input[type="checkbox"] { cursor: default; }
-        `)
-        .appendTo('head');
-});
