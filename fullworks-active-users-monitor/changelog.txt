@@ -1,0 +1,42 @@
+= 1.2.0 =
+* Security: an expired login cookie could crash the request through infinite recursion in the audit logger; only genuine expired sessions are now logged, once each
+* Security: CSV exports can no longer carry spreadsheet formulas from usernames or user agents
+* Security: the audit log records the real connecting IP by default; trust a proxy header with the new fwaum_client_ip_headers filter
+* New: personal data export and erasure for the audit log, plus suggested privacy policy text
+* Fixed: "Who Can See Online Status", "IP Address Privacy" and "Track Failed Logins" settings now take effect
+* Fixed: online users are found in one query and counted on sites of any size; refreshes reuse the cache
+* Fixed: with the Two Factor plugin, logins are recorded when the second factor succeeds and only 2FA logins are tagged Two Factor
+* Fixed: role names show as "Administrator" rather than "administrator"
+* Fixed: audit log times, retention and IP anonymization respect the site timezone
+* Fixed: valid Excel export, sanitised export filenames, translatable JavaScript text
+* Fixed: daily cleanup is removed on deactivation; uninstall scales to large sites and networks
+* Removed: keyboard shortcuts on the audit pages that overrode the browser's Ctrl/Cmd+F and Ctrl/Cmd+E
+* Full details in CHANGELOG.md on GitHub
+
+= 1.1.0 =
+* Added comprehensive audit trail functionality to track user login/logout events
+* New audit log table under Users menu with advanced filtering and search
+* Export audit logs to CSV, JSON, or Excel formats
+* Track login methods (standard, social, two-factor, API, etc.)
+* Monitor session durations and failed login attempts
+* Configurable retention periods and privacy settings
+* Database migration support for existing user data
+* Updated minimum WordPress version to 6.2 for enhanced security features
+* Fully compliant with WordPress Coding Standards
+
+= 1.0.1 =
+* Fixed contributor name and donation link
+* Added WordPress Playground blueprint for easy preview
+* Added plugin assets to readme
+* Minor documentation improvements
+
+= 1.0.0 =
+* Initial release
+* Real-time user monitoring using session tokens
+* Admin bar counter with role breakdown
+* Enhanced users list with visual indicators
+* Dashboard widget for quick overview
+* Configurable auto-refresh intervals
+* WP-CLI command support
+* Comprehensive settings page
+* Full internationalization support

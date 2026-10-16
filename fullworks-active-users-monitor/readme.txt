@@ -151,7 +151,7 @@ No. The plugin is optimized for performance with smart caching, efficient querie
 * Fixed: valid Excel export, sanitised export filenames, translatable JavaScript text
 * Fixed: daily cleanup is removed on deactivation; uninstall scales to large sites and networks
 * Removed: keyboard shortcuts on the audit pages that overrode the browser's Ctrl/Cmd+F and Ctrl/Cmd+E
-* Full details in CHANGELOG.md on GitHub
+* Full details in changelog.txt, included with the plugin
 
 = 1.1.0 =
 * Added comprehensive audit trail functionality to track user login/logout events
